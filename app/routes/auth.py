@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.security import hash_password
-
+# FIXED: Standardized package path imports uniformly
+from app.security import hash_password, verify_password
+ 
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
@@ -14,24 +15,29 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/register")
 def register_page(request: Request):
-    # UNIVERSAL FIX: Explicitly pass both 'request' and 'name' by keyword.
-    # This works across older Starlette versions and new FastAPI 0.110+ versions.
     return templates.TemplateResponse(
         request=request,
         name="auth/register.html"
     )
 
 
+@router.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/login.html"
+    )
+
+
 @router.post("/register")
 def register_user(
-    request:Request,
+    request: Request,
     name: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-
     name = str(name).strip()
     email = str(email).strip()
     password = str(password).strip()
@@ -39,22 +45,16 @@ def register_user(
 
     if not name:
         return {"error": "Name is required"}
-
     if not email:
         return {"error": "Email is required"}
-
     if len(password) < 8:
         return {"error": "Password must be at least 8 characters"}
-
-    # bcrypt limit (72 BYTES, not characters)
     if len(password.encode("utf-8")) > 72:
         return {"error": "Password too long (bcrypt supports max 72 bytes)"}
-
     if password != confirm_password:
         return {"error": "Passwords do not match"}
 
     existing_user = db.query(User).filter(User.email == email).first()
-
     if existing_user:
         return {"error": "Email already registered"}
 
@@ -62,7 +62,7 @@ def register_user(
     
     new_user = User(
         name=name,
-        email=email,
+        email=email,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         password=hashed_password,
         role="user"
     )
@@ -73,7 +73,19 @@ def register_user(
 
     return RedirectResponse(url="/login", status_code=303)
 
-@router.get("/login")
-def login_page(request: Request):
-    # Simply returns a basic text message until you build your login.html template
-    return {"message": "Registration successful! Login page coming soon."}
+
+@router.post("/login")
+def login_user(
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return {"message": "Invalid Email"}
+
+    # FIXED: Corrected 'user.passoword' typo to 'user.password'
+    if not verify_password(password, user.password):
+        return {"message": "Invalid Password"}
+
+    return {"message": "Login Successful"}

@@ -17,7 +17,6 @@ def home():
 
 app.include_router(auth_router)
 
-# FIXED & UNCOMMENTED: Targets app/static safely within the Docker file system
 app.mount(
     "/static",
     StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")),
