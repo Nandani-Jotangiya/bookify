@@ -4,8 +4,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
-# FIXED: Standardized package path imports uniformly
+from app.models.User import User
 from app.security import hash_password, verify_password
  
 router = APIRouter()
@@ -13,21 +12,15 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
+
+# REGISTER ROUTES
+
 @router.get("/register")
 def register_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="auth/register.html"
     )
-
-
-@router.get("/login")
-def login_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="auth/login.html"
-    )
-
 
 @router.post("/register")
 def register_user(
@@ -73,9 +66,18 @@ def register_user(
 
     return RedirectResponse(url="/login", status_code=303)
 
+# LOGIN ROUTES
+
+@router.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/login.html"
+    )
 
 @router.post("/login")
 def login_user(
+    request:Request,
     email: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db)
@@ -88,4 +90,41 @@ def login_user(
     if not verify_password(password, user.password):
         return {"message": "Invalid Password"}
 
-    return {"message": "Login Successful"}
+
+    request.session["user_id"] = user.id
+    request.session["role"] = user.role
+
+    return RedirectResponse(
+    url="/dashboard",
+    status_code=303
+)
+
+# DASHBOARD ROUTES
+
+@router.get("/dashboard")
+def dashboard_page(request:Request):
+
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return RedirectResponse(
+            url="/login",
+            status_code=303
+        )
+
+    return templates.TemplateResponse (
+        request=request,
+        name="user/dashboard.html"
+    )
+
+
+# LOGOUT ROUTE
+@router.get("/logout")
+def logout_page(request:Request):
+
+    request.session.clear()
+
+    return RedirectResponse(
+        url= "/login",
+        status_code=303
+    )
