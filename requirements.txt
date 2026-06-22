@@ -46,3 +46,5 @@ uvloop==0.22.1
 watchfiles==1.2.0
 websockets==16.0
 itsdangerous==2.2.0
+python-jose[cryptography]
+passlib[bcrypt]

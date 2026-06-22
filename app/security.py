@@ -1,4 +1,5 @@
 import bcrypt
+import re
 
 def hash_password(password: str) -> str:
     """
@@ -24,3 +25,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     
     # Securely compares the text against the database hash record
     return bcrypt.checkpw(password_bytes, hashed_bytes)
+
+
+def is_valid_email(email:str) ->bool :
+
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
+    return re.match(pattern, email) is not None

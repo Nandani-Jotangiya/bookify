@@ -1,83 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookify Dashboard</title>
+{% extends "user/layout.html" %}
 
-    <link rel="stylesheet" href="/static/css/dashboard.css">
-</head>
-<body>
+{% block content %}
 
-<div class="dashboard">
+<h2 class="mb-4">
+    Welcome, {{ user.name }}
+</h2>
 
-    <aside class="sidebar">
-        <h2>Bookify</h2>
+<div class="row g-4">
 
-        <ul>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/categories">Categories</a></li>
-            <li><a href="/books">Books</a></li>
-            <li><a href="/requests">Requests</a></li>
-            <li><a href="/history">History</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
-    </aside>
+    <!-- Available Books -->
 
-    <main class="content">
+    <div class="col-md-3">
+        <div class="card shadow border-0">
+            <div class="card-body text-center">
 
-        <div class="header">
-            <h1>Dashboard</h1>
-            <p>Welcome to Bookify Library Management System</p>
-        </div>
+                <h5 class="card-title">
+                    Available Books
+                </h5>
 
-        <div class="cards">
+                <h1 class="text-primary">
+                    {{ total_books if total_books else 0 }}
+                </h1>
 
-            <div class="card">
-                <h3>Total Books</h3>
-                <p>120</p>
             </div>
-
-            <div class="card">
-                <h3>Total Users</h3>
-                <p>45</p>
-            </div>
-
-            <div class="card">
-                <h3>Issued Books</h3>
-                <p>32</p>
-            </div>
-
         </div>
+    </div>
 
-        <div class="activity">
-            <h2>Recent Activity</h2>
+    <!-- My Requests -->
 
-            <table>
-                <tr>
-                    <th>User</th>
-                    <th>Book</th>
-                    <th>Status</th>
-                </tr>
+    <div class="col-md-3">
+        <div class="card shadow border-0">
+            <div class="card-body text-center">
 
-                <tr>
-                    <td>John</td>
-                    <td>Python Basics</td>
-                    <td>Issued</td>
-                </tr>
+                <h5 class="card-title">
+                    My Requests
+                </h5>
 
-                <tr>
-                    <td>Sarah</td>
-                    <td>FastAPI Guide</td>
-                    <td>Returned</td>
-                </tr>
+                <h1 class="text-warning">
+                    {{ total_requests if total_requests else 0 }}
+                </h1>
 
-            </table>
+            </div>
         </div>
+    </div>
 
-    </main>
+    <!-- Issued Books -->
+
+    <div class="col-md-3">
+        <div class="card shadow border-0">
+            <div class="card-body text-center">
+
+                <h5 class="card-title">
+                    Issued Books
+                </h5>
+
+                <h1 class="text-success">
+                    {{ total_issued if total_issued else 0 }}
+                </h1>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Returned Books -->
+
+    <div class="col-md-3">
+        <div class="card shadow border-0">
+            <div class="card-body text-center">
+
+                <h5 class="card-title">
+                    Returned Books
+                </h5>
+
+                <h1 class="text-danger">
+                    {{ total_returned if total_returned else 0 }}
+                </h1>
+
+            </div>
+        </div>
+    </div>
 
 </div>
 
-</body>
-</html>
+<hr class="my-5">
+
+<div class="card shadow border-0">
+
+    <div class="card-header bg-primary text-white">
+        User Information
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6">
+                <p>
+                    <strong>User ID:</strong>
+                    {{ user.user_id }}
+                </p>
+            </div>
+
+            <div class="col-md-6">
+                <p>
+                    <strong>Role:</strong>
+                    {{ user.role }}
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

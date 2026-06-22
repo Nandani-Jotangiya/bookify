@@ -1,0 +1,78 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Issued Books</h2>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            {% if issued_books %}
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover align-middle">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Member Name</th>
+                            <th>Book Title</th>
+                            <th>Issued Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for issue, member, book in issued_books %}
+                        <tr>
+                            <td>{{ issue.id }}</td>
+
+                            <td>{{ member.name }}</td>
+
+                            <td>{{ book.title }}</td>
+
+                            <td>
+                                {{ issue.issued_date.strftime('%d %b %Y') }}
+                            </td>
+
+                            <td>
+                                {{ issue.due_date.strftime('%d %b %Y') }}
+                            </td>
+
+                            <td>
+                                {% if issue.status == "issued" %}
+                                    <span class="badge bg-success">
+                                        Issued
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        {{ issue.status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            {% else %}
+
+            <div class="alert alert-info">
+                No issued books found.
+            </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

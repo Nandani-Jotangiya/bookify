@@ -1,50 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Bookify</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
-</head>
-<body>
+{% extends "auth/layout.html" %}
 
-    <div class="login-container">
+{% block title %}
+Login | Bookify
+{% endblock %}
 
-        <h1>Bookify</h1>
-        <h2>Welcome Back</h2>
+{% block content %}
 
-        <form action="/login" method="post">
+<div class="container mt-5">
 
-            <label for="email">Email</label>
-            <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="Enter Your Email"
-                required
-            >
+    <div class="row justify-content-center">
 
-            <label for="password">Password</label>
-            <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Enter Your Password"
-                required
-            >
+        <div class="col-md-5">
 
-            <button type="submit" id="login_btn">
-                Login
-            </button>
+            <div class="card shadow">
 
-        </form>
+                <div class="card-body p-4">
 
-        <p>
-            Don't have an account?
-            <a href="/register">Register</a>
-        </p>
+                    <h2 class="text-center mb-4">
+                        📚 Bookify Login
+                    </h2>
+
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    {% if email_not_found %}
+                    <div class="alert alert-warning">
+
+                        <h6>You are not registered yet</h6>
+
+                        <p class="mb-2">
+                            We couldn't find an account with this email address.
+                            Please register first to continue.
+                        </p>
+
+                        <a href="/register?email={{ email }}" class="btn btn-primary btn-sm">
+                            Create Account
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <form action="/check-email" method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Email Address
+                            </label>
+
+                            <input type="email" name="email" class="form-control" value="{{ email if email else '' }}"
+                                placeholder="Enter your email" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Continue
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
 
     </div>
 
-</body>
-</html>
+</div>
+
+{% endblock %}
