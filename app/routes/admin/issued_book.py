@@ -28,7 +28,7 @@ def issued_books(
         )
     issued_books = (
         db.query(
-            IssuedBook,
+            IssuedBook, 
             User,
             Book
         )

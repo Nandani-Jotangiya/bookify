@@ -17,6 +17,5 @@ class BookRequest(Base):
         DateTime,default=func.now()
     )
 
-    user = relationship("User")
-    book = relationship("Book")
-    
+    user = relationship("User", back_populates="book_requests")
+    book = relationship("Book", back_populates="book_requests")

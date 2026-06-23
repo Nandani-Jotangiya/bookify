@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 from app.database import get_db
 from sqlalchemy.orm import Session
 from app.models.BookRequest import BookRequest
+from app.models.Book import Book
 from app.auth_dependencies import get_current_user
 
 from app.models.IssuedBook import IssuedBook
@@ -74,8 +75,20 @@ def approve_request(
     if not book_request :
         return {"error":"request not found"}
 
+    if book_request.status != "pending":
+        return RedirectResponse(
+        url="/admin/requests",
+        status_code=303
+    )
 
-    book_request.status = "Approved"
+    book = book_request.book
+
+    if book.available_quantity <= 0:
+        return {"error": "Book not available"}
+
+    book_request.status = "approved"
+
+    book.available_quantity -= 1
 
     issued_book = IssuedBook(
         user_id=book_request.user_id,
@@ -103,11 +116,50 @@ def reject_request (
     if not book_request :
         return {"error":"request not found"}
 
-    book_request.status = "Rejected"
+    book_request.status = "rejected"
 
     db.commit()
 
     return RedirectResponse(
         url="/admin/requests",
+        status_code=303
+    )
+
+@router.get("/admin/return-book/{issue_id}")
+def return_book(
+    issue_id: int,
+    db: Session = Depends(get_db)
+):
+    issued_book = (
+        db.query(IssuedBook)
+        .filter(IssuedBook.id == issue_id)
+        .first()
+    )
+
+    if not issued_book:
+        return {"error": "Issued book not found"}
+
+    if issued_book.status == "returned":
+        return RedirectResponse(
+            url="/admin/issued-books",
+            status_code=303
+        )
+
+    issued_book.status = "returned"
+    issued_book.return_date = datetime.now(UTC)
+
+    book = (
+        db.query(Book)
+        .filter(Book.id == issued_book.book_id)
+        .first()
+    )
+
+    if book:
+        book.available_quantity += 1
+
+    db.commit()
+
+    return RedirectResponse(
+        url="/admin/issued-books",
         status_code=303
     )

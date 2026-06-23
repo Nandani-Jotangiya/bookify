@@ -46,20 +46,23 @@ Book Requests
                             <td>{{ request.book.title }}</td>
 
                             <td>
-                                {% if request.status == "pending" %}
-                                    <span class="badge bg-warning text-dark">
-                                        Pending
-                                    </span>
+                                {% if request.status|lower == "pending" %}
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
 
-                                {% elif request.status == "approved" %}
-                                    <span class="badge bg-success">
-                                        Approved
-                                    </span>
+                                {% elif request.status|lower == "approved" %}
+                                <span class="badge bg-success">
+                                    Approved
+                                </span>
 
-                                {% elif request.status == "rejected" %}
-                                    <span class="badge bg-danger">
-                                        Rejected
-                                    </span>
+                                {% elif request.status|lower == "rejected" %}
+                                <span class="badge bg-danger">
+                                    Rejected
+                                </span>
+
+                                {% else %}
+                                {{ request.status }}
                                 {% endif %}
                             </td>
 
@@ -71,17 +74,11 @@ Book Requests
 
                                 {% if request.status == "pending" %}
 
-                                <a
-                                    href="/admin/request/{{ request.id }}/approve"
-                                    class="btn btn-success btn-sm"
-                                >
+                                <a href="/admin/request/{{ request.id }}/approve" class="btn btn-success btn-sm">
                                     Approve
                                 </a>
 
-                                <a
-                                    href="/admin/request/{{ request.id }}/reject"
-                                    class="btn btn-danger btn-sm"
-                                >
+                                <a href="/admin/request/{{ request.id }}/reject" class="btn btn-danger btn-sm">
                                     Reject
                                 </a>
 

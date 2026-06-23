@@ -52,6 +52,12 @@ def edit_book_page(id:int,request:Request,db:Session = Depends(get_db)):
     
     book = db.query(Book).filter(Book.id == id).first()
 
+    if not book:
+        return RedirectResponse(
+        url="/books",
+        status_code=303
+    )
+
     categories = db.query(Category).all()
 
     return templates.TemplateResponse(
@@ -102,6 +108,9 @@ def update_book(
     if quantity <= 0:
         return {"message": "Quantity must be greater than 0"}
     
+    if description:
+        description = description.strip()
+    
     existing_book = (
         db.query(Book)
         .filter(Book.isbn == isbn,
@@ -115,13 +124,13 @@ def update_book(
         }
 
    
-    book.title=title,
-    book.author=author,
-    book.isbn=isbn,
-    book.price=price,
-    book.quantity=quantity,
-    book.description=description,
-    book.category_id=category_id
+    book.title = title
+    book.author = author
+    book.isbn = isbn
+    book.price = price
+    book.quantity = quantity
+    book.description = description
+    book.category_id = category_id
     
     db.commit()
 
@@ -208,4 +217,27 @@ def save_book(
     return RedirectResponse(
         url="/books",
         status_code=303
+    )
+
+@router.get("/books/view/{id}")
+def view_book(
+    id:int,
+    request:Request,
+    db:Session = Depends(get_db)
+):
+    
+    book = db.query(Book).filter(Book.id == id).first()
+
+    if not book :
+        return RedirectResponse(
+            url="/books",
+            status_code=303
+        )
+    
+    return  templates.TemplateResponse (
+        "admin/view_book.html",
+        {
+            "request":request,
+            "book":book
+        }
     )

@@ -13,6 +13,8 @@
             <th>ID</th>
             <th>Book Name</th>
             <th>Author</th>
+            <th>Category</th>
+            <th>Available</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -25,6 +27,8 @@
             <td>{{ book.id }}</td>
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
+            <td>{{ book.category.name }}</td>
+            <td>{{ book.available_quantity }}</td>
             <td>
     <form
         action="/user/request-book/{{ book.id }}"

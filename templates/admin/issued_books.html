@@ -24,6 +24,8 @@
                             <th>Issued Date</th>
                             <th>Due Date</th>
                             <th>Status</th>
+                            <th>Action</th>
+                            <th>Return Date</th>
                         </tr>
                     </thead>
 
@@ -46,13 +48,31 @@
 
                             <td>
                                 {% if issue.status == "issued" %}
-                                    <span class="badge bg-success">
-                                        Issued
-                                    </span>
+                                <span class="badge bg-success">
+                                    Issued
+                                </span>
                                 {% else %}
-                                    <span class="badge bg-secondary">
-                                        {{ issue.status }}
-                                    </span>
+                                <span class="badge bg-secondary">
+                                    {{ issue.status }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if issue.status == "issued" %}
+                                <a href="/admin/return-book/{{ issue.id }}" class="btn btn-warning btn-sm">
+                                    Return Book
+                                </a>
+                                {% else %}
+                                <span class="text-success">
+                                    Returned
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if issue.return_date %}
+                                {{ issue.return_date.strftime('%d %b %Y') }}
+                                {% else %}
+                                -
                                 {% endif %}
                             </td>
                         </tr>

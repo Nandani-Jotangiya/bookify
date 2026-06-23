@@ -227,7 +227,7 @@ def login_user(
     # Redirect based on role
     if user.role == "admin":
      response = RedirectResponse(
-        url="/dashboard",
+        url="admin/dashboard",
         status_code=303
     )
 
