@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.Book import Book
 from app.models.BookRequest import BookRequest
+from app.models.IssuedBook import IssuedBook
 from app.auth_dependencies import get_current_user
 
 router = APIRouter()
@@ -45,8 +46,12 @@ def request_book(
             status_code=303
         )
 
-    # Check if book exists
-    book = db.query(Book).filter(Book.id == book_id).first()
+    # Check book exists
+    book = (
+        db.query(Book)
+        .filter(Book.id == book_id)
+        .first()
+    )
 
     if not book:
         return RedirectResponse(
@@ -54,16 +59,32 @@ def request_book(
             status_code=303
         )
 
-    # Check book availability
-    if hasattr(book, "available_quantity"):
-        if book.available_quantity <= 0:
-            return RedirectResponse(
-                url="/books",
-                status_code=303
-            )
+    # Check stock available
+    if book.available_quantity <= 0:
+        return RedirectResponse(
+            url="/books",
+            status_code=303
+        )
 
-    # Prevent duplicate pending requests
-    existing_request = (
+    # Check if user already has this book issued
+    active_issue = (
+        db.query(IssuedBook)
+        .filter(
+            IssuedBook.user_id == current_user["user_id"],
+            IssuedBook.book_id == book_id,
+            IssuedBook.status == "issued"
+        )
+        .first()
+    )
+
+    if active_issue:
+        return RedirectResponse(
+            url="/books",
+            status_code=303
+        )
+
+    # Check pending request
+    pending_request = (
         db.query(BookRequest)
         .filter(
             BookRequest.user_id == current_user["user_id"],
@@ -73,7 +94,7 @@ def request_book(
         .first()
     )
 
-    if existing_request:
+    if pending_request:
         return RedirectResponse(
             url="/books",
             status_code=303
@@ -88,7 +109,6 @@ def request_book(
 
     db.add(new_request)
     db.commit()
-    db.refresh(new_request)
 
     print("REQUEST CREATED")
     print("USER ID =", current_user["user_id"])

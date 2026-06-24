@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.User import User
 from app.models.Category import Category
+from app.models.IssuedBook import IssuedBook
+from app.models.BookRequest import BookRequest
 from app.models.Book import Book
 from app.security import hash_password, verify_password,is_valid_email
 from app.utils.jwt_handler import create_access_token
@@ -303,18 +305,47 @@ def dashboard_page(
             status_code=303
         )
 
-    total_categories = db.query(Category).count()
     total_books = db.query(Book).count()
 
+    total_users = db.query(User).count()
+
+    total_categories = db.query(Category).count()
+
+    issued_books = (
+    db.query(IssuedBook)
+    .filter(IssuedBook.status == "issued")
+    .count()
+)
+
+    returned_books = (
+    db.query(IssuedBook)
+    .filter(IssuedBook.status == "returned")
+    .count()
+)
+
+    pending_requests = (
+    db.query(BookRequest)
+    .filter(BookRequest.status == "pending")
+    .count()
+)
+    available_books = sum(
+    book.available_quantity
+    for book in db.query(Book).all()
+)
+
     return templates.TemplateResponse(
-        "admin/dashboard.html",
-        {
-            "request": request,
-            "total_categories": total_categories,
-            "total_books": total_books,
-            "user": current_user
-        }   
-    )
+    "admin/dashboard.html",
+    {
+        "request": request,
+        "user": current_user,
+        "total_books": total_books,
+        "total_users": total_users,
+        "total_categories": total_categories,
+        "total_issued_books": issued_books,
+        "pending_requests": pending_requests,
+        "available_books": available_books
+    }
+)
 
 # LOGOUT ROUTE
 @router.get("/logout")

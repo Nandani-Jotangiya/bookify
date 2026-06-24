@@ -10,7 +10,7 @@ from app.models.User import Base
 from app.routes.auth import router as auth_router
 from app.routes.category import router as category_router
 from app.routes.books import router as books_router
-from app.routes.members import router as member_router
+
 from app.routes.user import router as user_router
 from app.routes.requests import router as request_route
 from app.routes.admin.issued_book import router as issuedBook_router
@@ -30,7 +30,6 @@ def home():
 app.include_router(auth_router)
 app.include_router(category_router)
 app.include_router(books_router)
-app.include_router(member_router)
 app.include_router(user_router)
 app.include_router(request_route)
 app.include_router(issuedBook_router)

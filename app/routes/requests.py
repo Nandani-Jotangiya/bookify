@@ -91,10 +91,11 @@ def approve_request(
     book.available_quantity -= 1
 
     issued_book = IssuedBook(
-        user_id=book_request.user_id,
-        book_id = book_request.book_id,
-        due_date =  datetime.now(UTC) + timedelta(days=14)
-    )
+    user_id=book_request.user_id,
+    book_id=book_request.book_id,
+    request_id=book_request.id,
+    due_date=datetime.now(UTC) + timedelta(days=14)
+)
     
     db.add(issued_book)
 

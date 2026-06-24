@@ -78,14 +78,12 @@ def user_history(request:Request,db:Session = Depends(get_db)):
         
         }
     )
-
 @router.post("/user/request-book/{book_id}")
 def request_book(
     book_id: int,
     request: Request,
     db: Session = Depends(get_db)
 ):
-    # Check JWT authentication
     current_user = get_current_user(request)
 
     if not current_user:
@@ -96,10 +94,11 @@ def request_book(
 
     user_id = current_user["user_id"]
 
-    # Check if book exists
-    book = db.query(Book).filter(
-        Book.id == book_id
-    ).first()
+    book = (
+        db.query(Book)
+        .filter(Book.id == book_id)
+        .first()
+    )
 
     if not book:
         return RedirectResponse(
@@ -107,23 +106,46 @@ def request_book(
             status_code=303
         )
 
-    # Prevent duplicate requests
-    existing_request = (
-        db.query(BookRequest)
-        .filter(
-            BookRequest.user_id == user_id,
-            BookRequest.book_id == book_id
-        )
-        .first()
-    )
-
-    if existing_request:
+    if book.available_quantity <= 0:
         return RedirectResponse(
             url="/user/books",
             status_code=303
         )
 
-    # Create new request
+    # Block if already has active issue
+    active_issue = (
+        db.query(IssuedBook)
+        .filter(
+            IssuedBook.user_id == user_id,
+            IssuedBook.book_id == book_id,
+            IssuedBook.status == "issued"
+        )
+        .first()
+    )
+
+    if active_issue:
+        return RedirectResponse(
+            url="/user/books",
+            status_code=303
+        )
+
+    # Block only pending request
+    pending_request = (
+        db.query(BookRequest)
+        .filter(
+            BookRequest.user_id == user_id,
+            BookRequest.book_id == book_id,
+            BookRequest.status == "pending"
+        )
+        .first()
+    )
+
+    if pending_request:
+        return RedirectResponse(
+            url="/user/books",
+            status_code=303
+        )
+
     new_request = BookRequest(
         user_id=user_id,
         book_id=book_id,
@@ -186,13 +208,12 @@ def issued_books_page(
             url="/login",
             status_code=303
         )
+    print(current_user)
 
     issued_books = (
     db.query(IssuedBook, Book)
     .join(Book, Book.id == IssuedBook.book_id)
-    .filter(
-        IssuedBook.user_id == current_user["user_id"]
-    )
+    .filter(IssuedBook.user_id == current_user["user_id"])
     .all()
 )
     print("ISSUED BOOKS =", issued_books)

@@ -29,8 +29,6 @@ def list_books(
         }
     )
 
-
-
 # ADD BOOK PAGE
 @router.get("/books/add")
 def add_book_page(
@@ -201,14 +199,15 @@ def save_book(
         }
 
     book = Book(
-        title=title,
-        author=author,
-        isbn=isbn,
-        price=price,
-        quantity=quantity,
-        description=description,
-        category_id=category_id
-    )
+    title=title,
+    author=author,
+    isbn=isbn,
+    price=price,
+    quantity=quantity,
+    available_quantity=quantity,
+    description=description,
+    category_id=category_id
+)
 
     db.add(book)
     db.commit()

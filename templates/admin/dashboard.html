@@ -10,24 +10,53 @@ Dashboard
 
 <div class="row">
 
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-body">
-                <h5>Total Categories</h5>
-                <h2>{{ total_categories }}</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card shadow">
-            <div class="card-body">
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
                 <h5>Total Books</h5>
                 <h2>{{ total_books }}</h2>
             </div>
         </div>
     </div>
 
-</div>
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>Total Users</h5>
+                <h2>{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
 
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>Categories</h5>
+                <h2>{{ total_categories }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>Issued Books</h5>
+                <h2>{{ total_issued_books }}</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="row">
+
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h5>Pending Requests</h5>
+                <h2>{{ pending_requests }}</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
