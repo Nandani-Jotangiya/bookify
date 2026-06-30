@@ -12,99 +12,62 @@ from app.models.User import User
 from app.models.Book import Book
 
 router = APIRouter()
+
 templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/admin/issued-books")
-def issued_books(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+def issued_books(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user(request)
 
     if not current_user:
-        return RedirectResponse(
-            url="/login",
-            status_code=303
-        )
+        return RedirectResponse(url="/login", status_code=303)
+
+    if current_user["role"] != "admin":
+        return RedirectResponse(url="/login", status_code=303)
 
     issued_book_records = (
-        db.query(
-            IssuedBook,
-            User,
-            Book
-        )
-        .join(
-            User,
-            User.id == IssuedBook.user_id
-        )
-        .join(
-            Book,
-            Book.id == IssuedBook.book_id
-        )
+        db.query(IssuedBook, Book, User)
+        .join(Book, Book.id == IssuedBook.book_id)
+        .join(User, User.id == IssuedBook.user_id)
+        .filter(IssuedBook.status == IssuedBook.STATUS_ISSUED)
         .all()
     )
 
+    today = datetime.now(timezone.utc)
+
+    issued_books_data = []
+
+    for issue, book, user in issued_book_records:
+        due_date = issue.due_date
+
+        if due_date and due_date.tzinfo is None:
+            due_date = due_date.replace(tzinfo=timezone.utc)
+
+        late_days = 0
+
+        if due_date and today > due_date:
+            late_days = (today - due_date).days
+
+        fine = late_days * 10
+
+        issued_books_data.append(
+            {
+                "issue": issue,
+                "book": book,
+                "user": user,
+                "late_days": late_days,
+                "fine": fine,
+                "is_overdue": late_days > 0,
+            }
+        )
+
     return templates.TemplateResponse(
-        "admin/issued_books.html",
-        {
+        request=request,
+        name="admin/issued_books.html",
+        context={
             "request": request,
             "user": current_user,
-            "issued_books": issued_book_records
-        }
-    )
-
-
-@router.get("/admin/return-book/{issue_id}")
-def return_book(
-    issue_id: int,
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    current_user = get_current_user(request)
-
-    if not current_user:
-        return RedirectResponse(
-            url="/login",
-            status_code=303
-        )
-
-    issue = (
-        db.query(IssuedBook)
-        .filter(IssuedBook.id == issue_id)
-        .first()
-    )
-
-    if not issue:
-        return RedirectResponse(
-            url="/admin/issued-books",
-            status_code=303
-        )
-
-    # Prevent double return
-    if issue.status == "returned":
-        return RedirectResponse(
-            url="/admin/issued-books",
-            status_code=303
-        )
-
-    book = (
-        db.query(Book)
-        .filter(Book.id == issue.book_id)
-        .first()
-    )
-
-    # Mark issue as returned
-    issue.status = "returned"
-    issue.return_date = datetime.now(timezone.utc)
-
-    # Restore book quantity
-    # Replace available_quantity with your actual field if different
-    book.available_quantity += 1
-
-    db.commit()
-
-    return RedirectResponse(
-        url="/admin/issued-books",
-        status_code=303
+            "issued_books": issued_books_data,
+        },
     )

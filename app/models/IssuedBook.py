@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, DateTime
+from sqlalchemy import Column, Integer, Float, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -9,44 +9,37 @@ class IssuedBook(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id"),
-        nullable=False
-    )
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    book_id = Column(
-        Integer,
-        ForeignKey("books.id"),
-        nullable=False
-    )
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
 
-    request_id = Column(
-        Integer,
-        ForeignKey("book_requests.id"),
-        nullable=False
-    )
+    request_id = Column(Integer, ForeignKey("book_requests.id"), nullable=False)
 
-    issued_date = Column(
-        DateTime,
-        default=func.now()
-    )
+    issued_date = Column(DateTime, default=func.now())
 
-    due_date = Column(DateTime)
+    # NEW FIELDS
+    rent_amount = Column(Float, default=0)
 
-    return_date = Column(DateTime)
+    deposit_amount = Column(Float, default=0)
 
-    status = Column(
-        String,
-        default="issued"
-    )
+    late_days = Column(Integer, default=0)
 
-    user = relationship(
-        "User",
-        back_populates="issued_books"
-    )
+    fine_amount = Column(Float, default=0)
 
-    book = relationship(
-        "Book",
-        back_populates="issued_books"
-    )
+    fine_paid = Column(Boolean, default=False)
+
+    fine_paid_date = Column(DateTime, nullable=True)
+
+    due_date = Column(DateTime, nullable=False)
+
+    return_date = Column(DateTime, nullable=True)
+
+    STATUS_ISSUED = "issued"
+    STATUS_RETURNED = "returned"
+    STATUS_PENDING = "pending"
+
+    status = Column(String, default=STATUS_ISSUED)
+
+    user = relationship("User", back_populates="issued_books")
+
+    book = relationship("Book", back_populates="issued_books")

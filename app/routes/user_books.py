@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -16,105 +16,80 @@ templates = Jinja2Templates(directory="templates")
 
 # USER BOOK LIST
 @router.get("/books")
-def user_books(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+def user_books(request: Request, db: Session = Depends(get_db)):
     books = db.query(Book).all()
 
     return templates.TemplateResponse(
-        "user/books.html",
-        {
-            "request": request,
-            "books": books
-        }
+        "user/books.html", {"request": request, "books": books}
     )
 
 
 # REQUEST BOOK
 @router.post("/user/request-book/{book_id}")
 def request_book(
-    book_id: int,
     request: Request,
-    db: Session = Depends(get_db)
+    book_id: int,
+    rental_days: int = Form(...),
+    db: Session = Depends(get_db),
 ):
     current_user = get_current_user(request)
 
     if not current_user:
-        return RedirectResponse(
-            url="/login",
-            status_code=303
-        )
+        return RedirectResponse("/login", status_code=303)
 
-    # Check book exists
-    book = (
-        db.query(Book)
-        .filter(Book.id == book_id)
-        .first()
-    )
+    user_id = current_user["user_id"]
+
+    book = db.query(Book).filter(Book.id == book_id).first()
 
     if not book:
-        return RedirectResponse(
-            url="/books",
-            status_code=303
-        )
+        return RedirectResponse("/user/books", status_code=303)
 
-    # Check stock available
     if book.available_quantity <= 0:
-        return RedirectResponse(
-            url="/books",
-            status_code=303
-        )
+        return RedirectResponse("/user/books", status_code=303)
 
-    # Check if user already has this book issued
     active_issue = (
         db.query(IssuedBook)
         .filter(
-            IssuedBook.user_id == current_user["user_id"],
+            IssuedBook.user_id == user_id,
             IssuedBook.book_id == book_id,
-            IssuedBook.status == "issued"
+            IssuedBook.status == "issued",
         )
         .first()
     )
 
     if active_issue:
-        return RedirectResponse(
-            url="/books",
-            status_code=303
-        )
+        return RedirectResponse("/user/books", status_code=303)
 
-    # Check pending request
     pending_request = (
         db.query(BookRequest)
         .filter(
-            BookRequest.user_id == current_user["user_id"],
+            BookRequest.user_id == user_id,
             BookRequest.book_id == book_id,
-            BookRequest.status == "pending"
+            BookRequest.status == "pending",
         )
         .first()
     )
 
     if pending_request:
-        return RedirectResponse(
-            url="/books",
-            status_code=303
-        )
+        return RedirectResponse("/user/books", status_code=303)
 
-    # Create request
+    if rental_days <= 0:
+        return RedirectResponse("/user/request-book/" + str(book_id), status_code=303)
+
+    total_rent = rental_days * book.rent_per_day
+
+    deposit = total_rent * 0.25
+
     new_request = BookRequest(
-        user_id=current_user["user_id"],
-        book_id=book_id,
-        status="pending"
+        user_id=user_id, book_id=book_id, rental_days=rental_days, status="pending"
     )
 
     db.add(new_request)
     db.commit()
 
-    print("REQUEST CREATED")
-    print("USER ID =", current_user["user_id"])
-    print("BOOK ID =", book_id)
+    print("Book:", book.title)
+    print("Rental Days:", rental_days)
+    print("Total Rent:", total_rent)
+    print("Deposit:", deposit)
 
-    return RedirectResponse(
-        url="/books",
-        status_code=303
-    )
+    return RedirectResponse("/user/my-requests", status_code=303)

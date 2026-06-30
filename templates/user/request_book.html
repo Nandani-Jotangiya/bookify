@@ -1,0 +1,105 @@
+{% extends "user/layout.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-8">
+
+            <div class="card shadow">
+
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Request Book</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-bordered">
+
+                        <tr>
+                            <th>Book Title</th>
+                            <td>{{ book.title }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Author</th>
+                            <td>{{ book.author }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Category</th>
+                            <td>{{ book.category.name }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Available Quantity</th>
+                            <td>{{ book.available_quantity }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Rent Per Day</th>
+                            <td>₹{{ book.rent_per_day }}</td>
+                        </tr>
+
+                    </table>
+
+                    <form
+                        action="/user/request-book/{{ book.id }}"
+                        method="POST"
+                    >
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Rental Days
+                            </label>
+
+                            <input
+                                type="number"
+                                name="rental_days"
+                                class="form-control"
+                                min="1"
+                                max="30"
+                                placeholder="Enter number of rental days"
+                                required
+                            >
+
+                            <small class="text-muted">
+                                Maximum rental period is 30 days.
+                            </small>
+
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+
+                            <a
+                                href="/user/books"
+                                class="btn btn-secondary"
+                            >
+                                Back
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                            >
+                                Continue
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

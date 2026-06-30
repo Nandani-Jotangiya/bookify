@@ -26,40 +26,51 @@
                             <th>Status</th>
                             <th>Action</th>
                             <th>Return Date</th>
+                            <th>Fine</th>
+                            <th>Fine Status</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {% for issue, member, book in issued_books %}
+                        {% for item in issued_books %}
                         <tr>
-                            <td>{{ issue.id }}</td>
 
-                            <td>{{ member.name }}</td>
+                            <td>{{ item.issue.id }}</td>
 
-                            <td>{{ book.title }}</td>
+                            <td>{{ item.user.name }}</td>
+
+                            <td>{{ item.book.title }}</td>
 
                             <td>
-                                {{ issue.issued_date.strftime('%d %b %Y') }}
+                                {{ item.issue.issued_date.strftime('%d %b %Y') }}
                             </td>
 
                             <td>
-                                {{ issue.due_date.strftime('%d %b %Y') }}
+                                {{ item.issue.due_date.strftime('%d %b %Y') }}
                             </td>
 
                             <td>
-                                {% if issue.status == "issued" %}
+                                {% if item.issue.status == "issued" %}
                                 <span class="badge bg-success">
                                     Issued
                                 </span>
+
+                                {% if item.is_overdue %}
+                                <span class="badge bg-danger">
+                                    Overdue
+                                </span>
+                                {% endif %}
+
                                 {% else %}
                                 <span class="badge bg-secondary">
-                                    {{ issue.status }}
+                                    {{ item.issue.status }}
                                 </span>
                                 {% endif %}
                             </td>
+
                             <td>
-                                {% if issue.status == "issued" %}
-                                <a href="/admin/return-book/{{ issue.id }}" class="btn btn-warning btn-sm">
+                                {% if item.issue.status == "issued" %}
+                                <a href="/admin/return-book/{{ item.issue.id }}" class="btn btn-warning btn-sm">
                                     Return Book
                                 </a>
                                 {% else %}
@@ -68,13 +79,19 @@
                                 </span>
                                 {% endif %}
                             </td>
+
                             <td>
-                                {% if issue.return_date %}
-                                {{ issue.return_date.strftime('%d %b %Y') }}
+                                {% if item.issue.return_date %}
+                                {{ item.issue.return_date.strftime('%d %b %Y') }}
                                 {% else %}
                                 -
                                 {% endif %}
                             </td>
+                            
+                            <td>₹{{ item.issue.fine_amount or 0 }}</td>
+                            
+                            <td>{{ item.issue.fine_paid or "pending" }}</td>
+
                         </tr>
                         {% endfor %}
                     </tbody>

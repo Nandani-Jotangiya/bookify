@@ -30,17 +30,12 @@
             <td>{{ book.category.name }}</td>
             <td>{{ book.available_quantity }}</td>
             <td>
-    <form
-        action="/user/request-book/{{ book.id }}"
-        method="POST"
+    <a
+        href="/user/request-book/{{ book.id }}"
+        class="btn btn-primary btn-sm"
     >
-        <button
-            type="submit"
-            class="btn btn-primary btn-sm"
-        >
-            Request
-        </button>
-    </form>
+        Request
+    </a>
 </td>
         </tr>
 

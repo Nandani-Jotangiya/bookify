@@ -16,33 +16,15 @@ class Book(Base):
     description = Column(Text, nullable=False)
     quantity = Column(Integer, nullable=False)
 
-    available_quantity = Column(
-    Integer,
-    nullable=False,
-    default=0
-    )
-    category_id = Column(
-        Integer,
-        ForeignKey("categories.id"),
-        nullable=False
-    )
+    available_quantity = Column(Integer, nullable=False, default=0)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
 
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    category = relationship(
-        "Category",
-        back_populates="books"
-    )
+    rent_per_day = Column(Integer, nullable=False, default=0)
 
-    book_requests = relationship(
-        "BookRequest",
-        back_populates="book"
-    )
+    category = relationship("Category", back_populates="books")
 
-    issued_books = relationship(
-    "IssuedBook",
-    back_populates="book"
-)
+    book_requests = relationship("BookRequest", back_populates="book")
+
+    issued_books = relationship("IssuedBook", back_populates="book")

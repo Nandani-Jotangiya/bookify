@@ -28,64 +28,77 @@ Book Requests
                             <th>Book</th>
                             <th>Status</th>
                             <th>Request Date</th>
+                            <th>Rental Days</th>
+                            <th>Rent / Day</th>
+                            <th>Total Rent</th>
+                            <th>Deposit (25%)</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
 
-                        {% for request in requests %}
+                        {% for request, book, user in requests %}
+
                         <tr>
+                            <td>{{ request.id }}</td>
 
-                            <td>{{ loop.index }}</td>
+                            <td>{{ user.name }}</td>
 
-                            <td>{{ request.user.name }}</td>
+                            <td>{{ user.email }}</td>
 
-                            <td>{{ request.user.email }}</td>
-
-                            <td>{{ request.book.title }}</td>
+                            <td>{{ book.title }}</td>
 
                             <td>
-                                {% if request.status|lower == "pending" %}
                                 <span class="badge bg-warning text-dark">
-                                    Pending
+                                    {{ request.status }}
                                 </span>
-
-                                {% elif request.status|lower == "approved" %}
-                                <span class="badge bg-success">
-                                    Approved
-                                </span>
-
-                                {% elif request.status|lower == "rejected" %}
-                                <span class="badge bg-danger">
-                                    Rejected
-                                </span>
-
-                                {% else %}
-                                {{ request.status }}
-                                {% endif %}
                             </td>
 
                             <td>
-                                {{ request.created_at.strftime('%d %b %Y') }}
+                                {{ request.created_at.strftime("%d-%m-%Y") if request.created_at else "-" }}
+                            </td>
+
+                            <td>
+                                {{ request.rental_days }}
+                            </td>
+
+                            <td>
+                                ₹{{ book.rent_per_day }}
+                            </td>
+
+                            <td>
+                                ₹{{ request.rental_days * book.rent_per_day }}
+                            </td>
+
+                            <td>
+                                ₹{{ (request.rental_days * book.rent_per_day * 0.25)|int }}
                             </td>
 
                             <td>
 
                                 {% if request.status == "pending" %}
 
-                                <a href="/admin/request/{{ request.id }}/approve" class="btn btn-success btn-sm">
+                                <a href="/admin/request/{{ request.id }}/approve"
+                                   class="btn btn-success btn-sm">
                                     Approve
                                 </a>
 
-                                <a href="/admin/request/{{ request.id }}/reject" class="btn btn-danger btn-sm">
+                                <a href="/admin/request/{{ request.id }}/reject"
+                                   class="btn btn-danger btn-sm">
                                     Reject
                                 </a>
 
-                                {% else %}
+                                {% elif request.status == "approved" %}
 
-                                <span class="text-muted">
-                                    Completed
+                                <span class="badge bg-success">
+                                    Approved
+                                </span>
+
+                                {% elif request.status == "rejected" %}
+
+                                <span class="badge bg-danger">
+                                    Rejected
                                 </span>
 
                                 {% endif %}
@@ -93,6 +106,7 @@ Book Requests
                             </td>
 
                         </tr>
+
                         {% endfor %}
 
                     </tbody>
