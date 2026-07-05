@@ -1,56 +1,35 @@
-# 📚 Bookify - Library Book Rental Management System
+# Bookify - Library Book Rental Management System
 
 ## Overview
 
-Bookify is a Library Book Rental Management System that allows users to browse, rent, and manage books while providing administrators with tools to manage inventory, rentals, payments, and user requests.
-
-The system is built using FastAPI, PostgreSQL, SQLAlchemy, HTML, CSS, JavaScript, and Docker.
+Bookify is a library book rental management system built with FastAPI, PostgreSQL, SQLAlchemy, Jinja2, and Docker. Users can browse books, submit rental requests, pay a security deposit, and track issued books. Admins manage inventory, approve requests, issue/return books, and view rental history.
 
 ---
 
 ## Features
 
 ### User Module
-- User Registration and Login
-- Browse Available Books
-- View Book Details
-- Submit Rental Requests
-- Online Payment for Security Deposit
-- View Rental History
-- Chat with Admin
-- Receive Notifications
+- Registration and login (JWT cookie auth)
+- Browse available books and submit rental requests
+- Pay security deposit (simulated) and view receipt
+- View active issued books, requests, and rental history
 
 ### Admin Module
-- Dashboard Management
-- Book Management (CRUD)
-- Category Management
-- Rental Request Approval/Rejection
-- Payment Tracking
-- User Management
-- Rental History Monitoring
-- Notification Management
+- Dashboard with library statistics
+- Book and category management (CRUD)
+- Approve/reject rental requests
+- Issue and return books with late fine calculation
+- Rental return history
 
 ---
 
 ## Technology Stack
 
-### ⚙️ Backend
-- FastAPI
-- SQLAlchemy
-
-### 🗄️ Database
-- PostgreSQL
-
-### Frontend
-- HTML
-- CSS
-- JavaScript
-- Jinja2 Templates
-
-### DevOps
-- Docker
-- Docker Compose
-- Git & GitHub
+- **Backend:** FastAPI, SQLAlchemy, Alembic
+- **Database:** PostgreSQL 15
+- **Frontend:** HTML, Bootstrap 5, Jinja2 templates
+- **Auth:** JWT (httponly cookie) + CSRF protection on forms
+- **DevOps:** Docker, Docker Compose
 
 ---
 
@@ -58,191 +37,109 @@ The system is built using FastAPI, PostgreSQL, SQLAlchemy, HTML, CSS, JavaScript
 
 ```text
 bookify/
-│
-├── admin/
-├── auth/
-├── user/
-├── routes/
-│   ├── admin.py
-│   ├── auth.py
-│   ├── books.py
-│   ├── category.py
-│   ├── payment.py
-│   └── rental.py
-│
 ├── app/
-│   ├── main.py
-│   ├── database.py
-│   └── models.py
-│
-├── static/
-│   ├── style.css
-│   └── script.js
-│
+│   ├── main.py              # App entry, routers, middleware
+│   ├── config.py            # Paths, SECRET_KEY
+│   ├── database.py          # SQLAlchemy engine + session
+│   ├── db_init.py           # Startup DB + Alembic sync
+│   ├── core/
+│   │   ├── csrf.py          # CSRF token helpers
+│   │   ├── dependencies.py  # Auth guards
+│   │   ├── security.py      # Password hashing
+│   │   └── templates.py     # Jinja2 render helper
+│   ├── models/
+│   ├── routes/
+│   │   ├── auth.py
+│   │   ├── user.py
+│   │   ├── payment.py
+│   │   └── admin/
+│   ├── services/fine.py
+│   ├── static/css/
+│   └── templates/
+├── alembic/
 ├── requirements.txt
 ├── Dockerfile
-├── docker-compose.yml
-├── .dockerignore
-└── .gitignore
+└── docker-compose.yml
 ```
 
 ---
 
-## ⚡ Installation
+## Installation
 
-### 1️⃣ Clone Repository
+### Clone and set up Python environment
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/bookify.git
 cd bookify
-```
-
-### 2️⃣ Create Virtual Environment
-
-```bash
 python3 -m venv .venv
-```
-
-### Activate Environment
-
-**Linux / Mac**
-
-```bash
-source .venv/bin/activate
-```
-
-**Windows**
-
-```bash
-.venv\Scripts\activate
-```
-
-### 3️⃣ Install Dependencies
-
-```bash
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
----
+### Environment variables
 
-## 🐘 PostgreSQL Setup
-
-Create a PostgreSQL database:
-
-```sql
-CREATE DATABASE bookify_db;
-```
-
-Update database configuration in:
-
-```text
-app/database.py
-```
-
-Example:
-
-```python
-DATABASE_URL = "postgresql://postgres:password@localhost/bookify_db"
-```
+| Variable | Description | Default (Docker) |
+|---|---|---|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:postgres@db:5432/bookify_db` |
+| `SECRET_KEY` | JWT + session signing key | Set in `docker-compose.yml` |
 
 ---
 
-## Run Application Locally
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### 🌐 Application URL
-
-```text
-http://127.0.0.1:8000
-```
-
-### 📄 Swagger Documentation
-
-```text
-http://127.0.0.1:8000/docs
-```
-
----
-
-## 🐳 Docker Setup
-
-### Build Docker Image
-
-```bash
-docker build -t bookify-app .
-```
-
-### Run Docker Container
-
-```bash
-docker run -p 8000:8000 bookify-app
-```
-
----
-
-## 🐳 Docker Compose Setup
-
-### Start Application and Database
+## Run with Docker (recommended)
 
 ```bash
 docker compose up --build
 ```
 
-### Run in Background
+| Service | URL |
+|---|---|
+| App | http://127.0.0.1:8000 |
+| Login | http://127.0.0.1:8000/login |
+| API docs | http://127.0.0.1:8000/docs |
+| PostgreSQL (host) | `localhost:5433` |
+
+Connect to the database from your machine:
 
 ```bash
-docker compose up -d
-```
-
-### Stop Services
-
-```bash
-docker compose down
-```
-
-### Remove Containers and Volumes
-
-```bash
-docker compose down -v
+docker exec -it bookify_db psql -U postgres -d bookify_db
 ```
 
 ---
 
-## Git Workflow
+## Run locally (without Docker)
 
-### Create Development Branch
+1. Start PostgreSQL and create `bookify_db`
+2. Set `DATABASE_URL` in a `.env` file:
 
-```bash
-git checkout -b develop
+```text
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bookify_db
+SECRET_KEY=your-secret-key-here
 ```
 
-### Commit Changes
+3. Run migrations / startup and start the server:
 
 ```bash
-git add .
-git commit -m "Your commit message"
+uvicorn app.main:app --reload
 ```
 
-### Push Changes
+---
+
+## Database migrations
+
+Schema changes are managed with Alembic:
 
 ```bash
-git push origin develop
+alembic upgrade head
 ```
+
+On app startup, `db_init.py` ensures tables exist and applies pending migrations.
 
 ---
 
 ## Future Enhancements
 
-- JWT Authentication
-- Role-Based Access Control
-- Email Notifications
-- PDF Receipt Generation
-- Recommendation System
-- Advanced Search & Filters
-- Payment Gateway Integration
-- Dockerized Production Deployment
-
----
+- Real payment gateway integration
+- Email notifications
+- PDF receipt export
+- Advanced search and filters
+- User management UI for admins

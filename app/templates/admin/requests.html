@@ -1,0 +1,84 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Book Requests{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Book Requests</h1>
+
+<div class="panel-card">
+    <div class="card-body">
+        {% if error %}
+        <div class="alert alert-danger py-2">{{ error }}</div>
+        {% endif %}
+
+        {% if requests %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Member</th>
+                        <th>Email</th>
+                        <th>Book</th>
+                        <th>Status</th>
+                        <th>Request Date</th>
+                        <th>Rental Days</th>
+                        <th>Rent / Day</th>
+                        <th>Total Rent</th>
+                        <th>Deposit (25%)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request, book, user in requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ book.title }}</td>
+                        <td>
+                            <span class="badge bg-warning text-dark">{{ request.status }}</span>
+                        </td>
+                        <td>
+                            {{ request.created_at.strftime("%d-%m-%Y") if request.created_at else "-" }}
+                        </td>
+                        <td>{{ request.rental_days }}</td>
+                        <td>₹{{ book.rent_per_day }}</td>
+                        <td>₹{{ request.rental_days * book.rent_per_day }}</td>
+                        <td>₹{{ (request.rental_days * book.rent_per_day * 0.25)|int }}</td>
+                        <td>
+                            {% if request.status == "pending" %}
+                            <form
+                                action="/admin/request/{{ request.id }}/approve"
+                                method="post"
+                                class="d-inline"
+                            >
+                                {% include "partials/csrf_field.html" %}
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form
+                                action="/admin/request/{{ request.id }}/reject"
+                                method="post"
+                                class="d-inline"
+                                onsubmit="return confirm('Reject this request?')"
+                            >
+                                {% include "partials/csrf_field.html" %}
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                            {% elif request.status == "approved" %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif request.status == "rejected" %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No book requests found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

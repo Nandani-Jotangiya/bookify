@@ -1,0 +1,58 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Books</div>
+            <div class="stat-value text-books">{{ total_books }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value text-users">{{ total_users }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Categories</div>
+            <div class="stat-value text-categories">{{ total_categories }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Issued Books</div>
+            <div class="stat-value text-issued">{{ total_issued_books }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Pending Requests</div>
+            <div class="stat-value text-pending">{{ pending_requests }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Returned Books</div>
+            <div class="stat-value text-returned">{{ total_returned_books }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-label">Available Copies</div>
+            <div class="stat-value text-available">{{ available_books }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

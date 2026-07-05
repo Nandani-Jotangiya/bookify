@@ -1,0 +1,56 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Receipt{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Payment Receipt</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="panel-card">
+            <div class="card-header text-success">Payment Successful</div>
+            <div class="card-body">
+                <table class="table table-bordered table-sm table-key-value mb-3">
+                    <tr>
+                        <th>Receipt ID</th>
+                        <td>RCPT-{{ issue.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Book</th>
+                        <td>{{ book.title }}</td>
+                    </tr>
+                    <tr>
+                        <th>Author</th>
+                        <td>{{ book.author }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Rent</th>
+                        <td>₹{{ issue.rent_amount or 0 }}</td>
+                    </tr>
+                    <tr>
+                        <th>Deposit Paid</th>
+                        <td>₹{{ issue.deposit_amount or 0 }}</td>
+                    </tr>
+                    <tr>
+                        <th>Issued Date</th>
+                        <td>{{ issue.issued_date.strftime('%d %b %Y') if issue.issued_date else "-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Due Date</th>
+                        <td>{{ issue.due_date.strftime('%d %b %Y') if issue.due_date else "-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>{{ issue.status }}</td>
+                    </tr>
+                </table>
+
+                <div class="d-flex gap-2">
+                    <a href="/user/issued-books" class="btn btn-primary btn-sm">View Issued Books</a>
+                    <a href="/user/my-requests" class="btn btn-secondary btn-sm">My Requests</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

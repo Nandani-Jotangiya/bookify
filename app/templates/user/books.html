@@ -1,0 +1,38 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Books{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Available Books</h1>
+
+<div class="panel-card">
+<div class="card-body">
+<table class="table table-bordered table-sm mb-0">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Book Name</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Available</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ book.id }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.category.name }}</td>
+            <td>{{ book.available_quantity }}</td>
+            <td>
+                <a href="/user/request-book/{{ book.id }}" class="btn btn-primary btn-sm">Request</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock %}

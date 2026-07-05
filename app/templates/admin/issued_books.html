@@ -1,0 +1,91 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Issued Books{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1 class="page-title">Issued Books</h1>
+    <a href="/admin/history" class="btn btn-outline-secondary btn-sm">View Return History</a>
+</div>
+
+<div class="panel-card">
+    <div class="card-body">
+        {% if error %}
+        <div class="alert alert-danger py-2">{{ error }}</div>
+        {% endif %}
+
+        {% if issued_books %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Member Name</th>
+                        <th>Book Title</th>
+                        <th>Issued Date</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                        <th>Return Date</th>
+                        <th>Fine</th>
+                        <th>Fine Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in issued_books %}
+                    <tr>
+                        <td>{{ item.issue.id }}</td>
+                        <td>{{ item.user.name }}</td>
+                        <td>{{ item.book.title }}</td>
+                        <td>{{ item.issue.issued_date.strftime('%d %b %Y') }}</td>
+                        <td>{{ item.issue.due_date.strftime('%d %b %Y') }}</td>
+                        <td>
+                            {% if item.issue.status == "issued" %}
+                            <span class="badge bg-success">Issued</span>
+                            {% if item.is_overdue %}
+                            <span class="badge bg-danger">Overdue</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="badge bg-secondary">{{ item.issue.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.issue.status == "issued" %}
+                            <form
+                                action="/admin/return-book/{{ item.issue.id }}"
+                                method="post"
+                                onsubmit="return confirm('Mark this book as returned?')"
+                            >
+                                {% include "partials/csrf_field.html" %}
+                                <button type="submit" class="btn btn-warning btn-sm">Return Book</button>
+                            </form>
+                            {% else %}
+                            <span class="text-success">Returned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.issue.return_date %}
+                            {{ item.issue.return_date.strftime('%d %b %Y') }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>₹{{ item.issue.fine_amount or 0 }}</td>
+                        <td>
+                            {% if item.issue.fine_amount and item.issue.fine_amount > 0 %}
+                                {% if item.issue.fine_paid %}Paid{% else %}Unpaid{% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No issued books found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

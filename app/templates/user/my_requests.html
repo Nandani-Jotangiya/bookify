@@ -1,0 +1,42 @@
+{% extends "user/layout.html" %}
+
+{% block title %}My Requests{% endblock %}
+
+{% block content %}
+<h1 class="page-title">My Book Requests</h1>
+
+<div class="panel-card">
+    <div class="card-body">
+        <table class="table table-bordered table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Book Name</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request, book, issued in requests %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ request.status }}</td>
+                    <td>{{ request.created_at.strftime('%d %b %Y') if request.created_at else "-" }}</td>
+                    <td>
+                        {% if request.status == "approved" and issued and not issued.deposit_paid %}
+                        <a href="/user/payment/{{ issued.id }}" class="btn btn-success btn-sm">Pay Deposit</a>
+                        {% elif issued and issued.deposit_paid %}
+                        <a href="/user/receipt/{{ issued.id }}" class="btn btn-outline-primary btn-sm">Receipt</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

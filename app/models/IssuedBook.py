@@ -28,6 +28,8 @@ class IssuedBook(Base):
 
     fine_paid = Column(Boolean, default=False)
 
+    deposit_paid = Column(Boolean, default=False)
+
     fine_paid_date = Column(DateTime, nullable=True)
 
     due_date = Column(DateTime, nullable=False)

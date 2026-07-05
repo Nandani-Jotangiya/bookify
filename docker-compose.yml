@@ -32,6 +32,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/bookify_db
+      SECRET_KEY: bookify_super_secret_key_2026
     volumes:
       - .:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000

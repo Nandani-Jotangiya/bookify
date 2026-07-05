@@ -1,0 +1,62 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Request Book{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Request Book</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="panel-card">
+            <div class="card-header">Book Details</div>
+            <div class="card-body">
+                <table class="table table-bordered table-sm table-key-value mb-3">
+                    <tr>
+                        <th>Book Title</th>
+                        <td>{{ book.title }}</td>
+                    </tr>
+                    <tr>
+                        <th>Author</th>
+                        <td>{{ book.author }}</td>
+                    </tr>
+                    <tr>
+                        <th>Category</th>
+                        <td>{{ book.category.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Available Quantity</th>
+                        <td>{{ book.available_quantity }}</td>
+                    </tr>
+                    <tr>
+                        <th>Rent Per Day</th>
+                        <td>₹{{ book.rent_per_day }}</td>
+                    </tr>
+                </table>
+
+                <form action="/user/request-book/{{ book.id }}" method="post">
+                    {% include "partials/csrf_field.html" %}
+                    <div class="mb-3">
+                        <label class="form-label" for="rental_days">Rental Days</label>
+                        <input
+                            type="number"
+                            id="rental_days"
+                            name="rental_days"
+                            class="form-control"
+                            min="1"
+                            max="30"
+                            placeholder="Enter number of rental days"
+                            required
+                        >
+                        <small class="text-muted">Maximum rental period is 30 days.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/user/books" class="btn btn-secondary btn-sm">Back</a>
+                        <button type="submit" class="btn btn-success btn-sm">Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

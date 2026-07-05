@@ -1,0 +1,57 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Issued Books{% endblock %}
+
+{% block content %}
+<h1 class="page-title">My Issued Books</h1>
+
+<div class="panel-card">
+    <div class="card-body">
+        {% if issued_books %}
+        <table class="table table-bordered table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Deposit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in issued_books %}
+                <tr>
+                    <td>{{ item.book.title }}</td>
+                    <td>{{ item.issue.issued_date.strftime('%d %b %Y') if item.issue.issued_date else "-" }}</td>
+                    <td>
+                        {{ item.issue.due_date.strftime('%d %b %Y') if item.issue.due_date else "-" }}
+                        {% if item.is_overdue %}
+                        <span class="badge bg-danger ms-1">Overdue</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.issue.status }}</td>
+                    <td>
+                        {% if item.deposit_paid %}
+                        <span class="badge bg-success">Paid</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not item.deposit_paid %}
+                        <a href="/user/payment/{{ item.issue.id }}" class="btn btn-success btn-sm">Pay Deposit</a>
+                        {% else %}
+                        <a href="/user/receipt/{{ item.issue.id }}" class="btn btn-outline-primary btn-sm">Receipt</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No active issued books.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

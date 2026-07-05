@@ -1,29 +1,25 @@
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 
-from app.database import get_db
-from app.auth_dependencies import get_current_user
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
 
+from app.core.dependencies import get_admin_user
+from app.core.templates import render_template
+from app.database import get_db
+from app.models.Book import Book
 from app.models.IssuedBook import IssuedBook
 from app.models.User import User
-from app.models.Book import Book
+from app.services.fine import FINE_PER_DAY
 
 router = APIRouter()
 
-templates = Jinja2Templates(directory="templates")
-
 
 @router.get("/admin/issued-books")
-def issued_books(request: Request, db: Session = Depends(get_db)):
-    current_user = get_current_user(request)
-
-    if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
-
-    if current_user["role"] != "admin":
+def issued_books(
+    request: Request, error: str | None = None, db: Session = Depends(get_db)
+):
+    if not get_admin_user(request):
         return RedirectResponse(url="/login", status_code=303)
 
     issued_book_records = (
@@ -49,7 +45,7 @@ def issued_books(request: Request, db: Session = Depends(get_db)):
         if due_date and today > due_date:
             late_days = (today - due_date).days
 
-        fine = late_days * 10
+        fine = late_days * FINE_PER_DAY
 
         issued_books_data.append(
             {
@@ -62,12 +58,9 @@ def issued_books(request: Request, db: Session = Depends(get_db)):
             }
         )
 
-    return templates.TemplateResponse(
-        request=request,
-        name="admin/issued_books.html",
-        context={
-            "request": request,
-            "user": current_user,
-            "issued_books": issued_books_data,
-        },
+    return render_template(
+        request,
+        "admin/issued_books.html",
+        issued_books=issued_books_data,
+        error=error,
     )

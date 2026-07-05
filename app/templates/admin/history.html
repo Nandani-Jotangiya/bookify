@@ -1,0 +1,56 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Rental History</h1>
+
+<div class="panel-card">
+    <div class="card-body">
+        {% if history_records %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Member</th>
+                        <th>Book</th>
+                        <th>Issued Date</th>
+                        <th>Due Date</th>
+                        <th>Return Date</th>
+                        <th>Rent</th>
+                        <th>Late Days</th>
+                        <th>Fine</th>
+                        <th>Fine Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue, book, user in history_records %}
+                    <tr>
+                        <td>{{ issue.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ book.title }}</td>
+                        <td>{{ issue.issued_date.strftime('%d %b %Y') if issue.issued_date else "-" }}</td>
+                        <td>{{ issue.due_date.strftime('%d %b %Y') if issue.due_date else "-" }}</td>
+                        <td>{{ issue.return_date.strftime('%d %b %Y') if issue.return_date else "-" }}</td>
+                        <td>₹{{ issue.rent_amount or 0 }}</td>
+                        <td>{{ issue.late_days or 0 }}</td>
+                        <td>₹{{ issue.fine_amount or 0 }}</td>
+                        <td>
+                            {% if issue.fine_amount and issue.fine_amount > 0 %}
+                                {% if issue.fine_paid %}Paid{% else %}Unpaid{% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No returned books in history yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

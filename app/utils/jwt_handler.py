@@ -1,29 +1,19 @@
-from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 
-SECRET_KEY = "bookify_super_secret_key_2026"
-ALGORITHM = "HS256"
+from jose import JWTError, jwt
+
+from app.config import JWT_ALGORITHM, JWT_EXPIRE_HOURS, SECRET_KEY
+
 
 def create_access_token(data: dict):
     payload = data.copy()
-
-    expire = datetime.now(timezone.utc) + timedelta(hours=10)
-
+    expire = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE_HOURS)
     payload.update({"exp": expire})
-
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-    return token
+    return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def decode_access_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        print("DECODED =", payload)
-
-        return payload
-
-    except JWTError as e:
-        print("JWT ERROR =", e)
+        return jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+    except JWTError:
         return None

@@ -1,0 +1,71 @@
+{% extends "user/layout.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+<h1 class="page-title">My History</h1>
+
+<div class="panel-card mb-3">
+    <div class="card-header">Returned Books</div>
+    <div class="card-body">
+        {% if returned_books %}
+        <table class="table table-bordered table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Issued Date</th>
+                    <th>Return Date</th>
+                    <th>Rent</th>
+                    <th>Fine</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue, book in returned_books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ issue.issued_date.strftime('%d %b %Y') if issue.issued_date else "-" }}</td>
+                    <td>{{ issue.return_date.strftime('%d %b %Y') if issue.return_date else "-" }}</td>
+                    <td>₹{{ issue.rent_amount or 0 }}</td>
+                    <td>₹{{ issue.fine_amount or 0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No returned books yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="card-header">All Requests</div>
+    <div class="card-body">
+        {% if past_requests %}
+        <table class="table table-bordered table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Status</th>
+                    <th>Rental Days</th>
+                    <th>Request Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book_request, book in past_requests %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book_request.status }}</td>
+                    <td>{{ book_request.rental_days }}</td>
+                    <td>
+                        {{ book_request.created_at.strftime('%d %b %Y') if book_request.created_at else "-" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted mb-0">No requests yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

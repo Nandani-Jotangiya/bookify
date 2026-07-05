@@ -1,45 +1,51 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-import os
-from starlette.middleware.sessions import SessionMiddleware
+from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
-from app.database import engine
-from app.models import Category, Book
-from app.models.User import Base
+from app.config import SECRET_KEY, STATIC_DIR
+from app.db_init import initialize_database
+from app.routes.admin.books import router as books_router
+from app.routes.admin.category import router as category_router
+from app.routes.admin.dashboard import router as dashboard_router
+from app.routes.admin.history import router as history_router
+from app.routes.admin.issued_book import router as issued_book_router
+from app.routes.admin.requests import router as requests_router
 from app.routes.auth import router as auth_router
-from app.routes.category import router as category_router
-from app.routes.books import router as books_router
-
+from app.routes.payment import router as payment_router
 from app.routes.user import router as user_router
-from app.routes.requests import router as request_route
-from app.routes.admin.issued_book import router as issuedBook_router
-
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI()
 
 load_dotenv()
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_database()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
 @app.get("/")
 def home():
-    return {"message": "Working!"}
+    return RedirectResponse(url="/login", status_code=303)
 
 
+app.include_router(payment_router)
 app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(dashboard_router)
 app.include_router(category_router)
 app.include_router(books_router)
-app.include_router(user_router)
-app.include_router(request_route)
-app.include_router(issuedBook_router)
+app.include_router(requests_router)
+app.include_router(issued_book_router)
+app.include_router(history_router)
 
-app.mount(
-    "/static",
-    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")),
-    name="static",
-)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
+# Session middleware stores CSRF tokens; JWT auth uses the access_token cookie.
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
