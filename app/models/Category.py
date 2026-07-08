@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -11,3 +11,5 @@ class Category(Base):
     name = Column(String, unique=True, nullable=False)
 
     books = relationship("Book", back_populates="category")
+
+    is_system = Column(Boolean, default=False, nullable=False)

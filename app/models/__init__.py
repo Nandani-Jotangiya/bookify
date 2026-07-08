@@ -3,5 +3,6 @@ from app.models.BookRequest import BookRequest
 from app.models.Category import Category
 from app.models.IssuedBook import IssuedBook
 from app.models.User import User
+from app.models.Notification import Notification
 
-__all__ = ["Book", "BookRequest", "Category", "IssuedBook", "User"]
+__all__ = ["Book", "BookRequest", "Category", "IssuedBook", "User", "Notification"]
