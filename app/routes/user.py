@@ -9,8 +9,12 @@ from app.core.dependencies import get_logged_in_user
 from app.core.templates import render_template
 from app.models.IssuedBook import IssuedBook
 from app.models.Book import Book
+from app.models.User import User
 from app.models.BookRequest import BookRequest
 from app.database import get_db
+from app.services.notification_service import create_notification
+from app.enums.notification_type import NotificationType
+from app.core.context import unread_notification_count
 
 router = APIRouter()
 
@@ -20,14 +24,18 @@ def user_dashboard(request: Request, db: Session = Depends(get_db)):
     current_user = get_logged_in_user(request)
 
     if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
 
     user_id = current_user["user_id"]
 
+    notification_count = unread_notification_count(db, user_id)
+
     total_books = db.query(Book).filter(Book.available_quantity > 0).count()
+
     total_requests = (
         db.query(BookRequest).filter(BookRequest.user_id == user_id).count()
     )
+
     total_issued = (
         db.query(IssuedBook)
         .filter(
@@ -36,6 +44,7 @@ def user_dashboard(request: Request, db: Session = Depends(get_db)):
         )
         .count()
     )
+
     total_returned = (
         db.query(IssuedBook)
         .filter(
@@ -53,6 +62,7 @@ def user_dashboard(request: Request, db: Session = Depends(get_db)):
         total_requests=total_requests,
         total_issued=total_issued,
         total_returned=total_returned,
+        unread_notification_count=notification_count,
     )
 
 
@@ -61,11 +71,22 @@ def user_books(request: Request, db: Session = Depends(get_db)):
     current_user = get_logged_in_user(request)
 
     if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
+
+    notification_count = unread_notification_count(
+        db,
+        current_user["user_id"],
+    )
 
     books = db.query(Book).all()
 
-    return render_template(request, "user/books.html", user=current_user, books=books)
+    return render_template(
+        request,
+        "user/books.html",
+        user=current_user,
+        books=books,
+        unread_notification_count=notification_count,
+    )
 
 
 @router.get("/user/history")
@@ -73,9 +94,11 @@ def user_history(request: Request, db: Session = Depends(get_db)):
     current_user = get_logged_in_user(request)
 
     if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
 
     user_id = current_user["user_id"]
+
+    notification_count = unread_notification_count(db, user_id)
 
     returned_books = (
         db.query(IssuedBook, Book)
@@ -102,6 +125,7 @@ def user_history(request: Request, db: Session = Depends(get_db)):
         user=current_user,
         returned_books=returned_books,
         past_requests=past_requests,
+        unread_notification_count=notification_count,
     )
 
 
@@ -110,7 +134,12 @@ def my_requests(request: Request, db: Session = Depends(get_db)):
     current_user = get_logged_in_user(request)
 
     if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
+
+    notification_count = unread_notification_count(
+        db,
+        current_user["user_id"],
+    )
 
     requests = (
         db.query(BookRequest, Book, IssuedBook)
@@ -121,7 +150,12 @@ def my_requests(request: Request, db: Session = Depends(get_db)):
         .all()
     )
 
-    return render_template(request, "user/my_requests.html", requests=requests)
+    return render_template(
+        request,
+        "user/my_requests.html",
+        requests=requests,
+        unread_notification_count=notification_count,
+    )
 
 
 @router.get("/user/issued-books")
@@ -129,7 +163,12 @@ def issued_books_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_logged_in_user(request)
 
     if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
+
+    notification_count = unread_notification_count(
+        db,
+        current_user["user_id"],
+    )
 
     today = datetime.now(timezone.utc)
 
@@ -148,18 +187,16 @@ def issued_books_page(request: Request, db: Session = Depends(get_db)):
 
     for issue, book in records:
         due_date = issue.due_date
+
         if due_date and due_date.tzinfo is None:
             due_date = due_date.replace(tzinfo=timezone.utc)
-
-        is_overdue = bool(due_date and today > due_date)
-        deposit_paid = bool(issue.deposit_paid)
 
         issued_books.append(
             {
                 "issue": issue,
                 "book": book,
-                "is_overdue": is_overdue,
-                "deposit_paid": deposit_paid,
+                "is_overdue": bool(due_date and today > due_date),
+                "deposit_paid": bool(issue.deposit_paid),
             }
         )
 
@@ -168,6 +205,7 @@ def issued_books_page(request: Request, db: Session = Depends(get_db)):
         "user/issued_books.html",
         user=current_user,
         issued_books=issued_books,
+        unread_notification_count=notification_count,
     )
 
 
@@ -178,13 +216,22 @@ def request_book_page(book_id: int, request: Request, db: Session = Depends(get_
     if not current_user:
         return RedirectResponse("/login", status_code=303)
 
+    notification_count = unread_notification_count(
+        db,
+        current_user["user_id"],
+    )
+
     book = db.query(Book).filter(Book.id == book_id).first()
 
     if not book:
         return RedirectResponse("/user/books", status_code=303)
 
     return render_template(
-        request, "user/request_book.html", user=current_user, book=book
+        request,
+        "user/request_book.html",
+        user=current_user,
+        book=book,
+        unread_notification_count=notification_count,
     )
 
 
@@ -235,5 +282,17 @@ def request_book(
 
     db.add(new_request)
     db.commit()
+    db.refresh(new_request)
+
+    admins = db.query(User).filter(User.role == "admin").all()
+
+    for admin in admins:
+        create_notification(
+            db=db,
+            user_id=admin.id,
+            title="New Book Request",
+            message=f"{current_user['name']} requested '{book.title}'.",
+            notification_type=NotificationType.BOOK_REQUESTED,
+        )
 
     return RedirectResponse("/user/my-requests", status_code=303)

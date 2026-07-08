@@ -14,6 +14,9 @@ from app.models.IssuedBook import IssuedBook
 from app.models.User import User
 from app.services.fine import calculate_fine
 
+from app.services.notification_service import create_notification
+from app.enums.notification_type import NotificationType
+
 router = APIRouter()
 
 
@@ -103,6 +106,22 @@ def approve_request(
     db.add(issued_book)
     db.commit()
 
+    create_notification(
+        db=db,
+        user_id=book_request.user_id,
+        title="Request Approved",
+        message=f'Your request for "{book.title}" has been approved.',
+        notification_type=NotificationType.REQUEST_APPROVED,
+    )
+
+    create_notification(
+        db=db,
+        user_id=book_request.user_id,
+        title="Book Issued",
+        message=f'"{book.title}" has been issued to you.',
+        notification_type=NotificationType.BOOK_ISSUED,
+    )
+
     return RedirectResponse(url="/admin/requests", status_code=303)
 
 
@@ -132,6 +151,14 @@ def reject_request(
 
     book_request.status = "rejected"
     db.commit()
+
+    create_notification(
+        db=db,
+        user_id=book_request.user_id,
+        title="Request Rejected",
+        message=f'Your request for "{book_request.book.title}" has been rejected.',
+        notification_type=NotificationType.REQUEST_REJECTED,
+    )
 
     return RedirectResponse(url="/admin/requests", status_code=303)
 
@@ -176,5 +203,13 @@ def return_book(
         book.available_quantity += 1
 
     db.commit()
+
+    create_notification(
+        db=db,
+        user_id=issued_book.user_id,
+        title="Book Returned",
+        message=f'Thank you for returning "{book.title}".',
+        notification_type=NotificationType.BOOK_RETURNED,
+    )
 
     return RedirectResponse(url="/admin/issued-books", status_code=303)

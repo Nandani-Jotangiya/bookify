@@ -5,24 +5,33 @@ from sqlalchemy.orm import Session
 from app.core.csrf import verify_csrf_or_redirect
 from app.core.dependencies import get_logged_in_user
 from app.core.templates import render_template
+from app.core.context import unread_notification_count
 from app.database import get_db
 from app.models.Book import Book
 from app.models.IssuedBook import IssuedBook
+
+router = APIRouter()
 
 
 def is_deposit_paid(issue: IssuedBook) -> bool:
     return bool(issue.deposit_paid)
 
 
-router = APIRouter()
-
-
 @router.get("/user/payment/{issue_id}")
-def payment_page(request: Request, issue_id: int, db: Session = Depends(get_db)):
+def payment_page(
+    request: Request,
+    issue_id: int,
+    db: Session = Depends(get_db),
+):
     current_user = get_logged_in_user(request)
 
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
+
+    notification_count = unread_notification_count(
+        db,
+        current_user["user_id"],
+    )
 
     record = (
         db.query(IssuedBook, Book)
@@ -40,7 +49,10 @@ def payment_page(request: Request, issue_id: int, db: Session = Depends(get_db))
     issue, book = record
 
     if is_deposit_paid(issue):
-        return RedirectResponse(url=f"/user/receipt/{issue_id}", status_code=303)
+        return RedirectResponse(
+            url=f"/user/receipt/{issue_id}",
+            status_code=303,
+        )
 
     return render_template(
         request,
@@ -48,6 +60,7 @@ def payment_page(request: Request, issue_id: int, db: Session = Depends(get_db))
         user=current_user,
         issue=issue,
         book=book,
+        unread_notification_count=notification_count,
     )
 
 
@@ -80,20 +93,35 @@ def process_payment(
         return RedirectResponse(url="/user/my-requests", status_code=303)
 
     if is_deposit_paid(issue):
-        return RedirectResponse(url=f"/user/receipt/{issue_id}", status_code=303)
+        return RedirectResponse(
+            url=f"/user/receipt/{issue_id}",
+            status_code=303,
+        )
 
     issue.deposit_paid = True
     db.commit()
 
-    return RedirectResponse(url=f"/user/receipt/{issue_id}", status_code=303)
+    return RedirectResponse(
+        url=f"/user/receipt/{issue_id}",
+        status_code=303,
+    )
 
 
 @router.get("/user/receipt/{issue_id}")
-def receipt_page(request: Request, issue_id: int, db: Session = Depends(get_db)):
+def receipt_page(
+    request: Request,
+    issue_id: int,
+    db: Session = Depends(get_db),
+):
     current_user = get_logged_in_user(request)
 
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
+
+    notification_count = unread_notification_count(
+        db,
+        current_user["user_id"],
+    )
 
     record = (
         db.query(IssuedBook, Book)
@@ -111,7 +139,10 @@ def receipt_page(request: Request, issue_id: int, db: Session = Depends(get_db))
     issue, book = record
 
     if not is_deposit_paid(issue):
-        return RedirectResponse(url=f"/user/payment/{issue_id}", status_code=303)
+        return RedirectResponse(
+            url=f"/user/payment/{issue_id}",
+            status_code=303,
+        )
 
     return render_template(
         request,
@@ -119,4 +150,5 @@ def receipt_page(request: Request, issue_id: int, db: Session = Depends(get_db))
         user=current_user,
         issue=issue,
         book=book,
+        unread_notification_count=notification_count,
     )

@@ -18,7 +18,6 @@ class User(Base):
 
     issued_books = relationship("IssuedBook", back_populates="user")
 
-
-notifications = relationship(
-    "Notification", back_populates="user", cascade="all, delete-orphan"
-)
+    notifications = relationship(
+        "Notification", back_populates="user", cascade="all, delete-orphan"
+    )

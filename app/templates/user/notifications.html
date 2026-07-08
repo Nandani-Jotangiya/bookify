@@ -1,0 +1,81 @@
+{% extends layout %}
+
+{% block title %}
+Notifications
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Notifications</h2>
+    </div>
+
+    {% if notifications %}
+
+    <div class="list-group shadow-sm">
+
+        {% for notification in notifications %}
+
+        <div
+            class="list-group-item {% if not notification.is_read %}list-group-item-warning{% endif %}">
+
+            <div class="d-flex justify-content-between">
+
+                <div>
+
+                    <h5 class="mb-1">
+                        {{ notification.title }}
+                    </h5>
+
+                    <p class="mb-1">
+                        {{ notification.message }}
+                    </p>
+
+                    <small class="text-muted">
+                        {{ notification.created_at.strftime("%d %b %Y %I:%M %p") }}
+                    </small>
+
+                </div>
+
+                {% if not notification.is_read %}
+
+                <form
+                    action="/notifications/{{ notification.id }}/read"
+                    method="post">
+
+                    <button
+                        class="btn btn-sm btn-primary">
+                        Mark as Read
+                    </button>
+
+                </form>
+
+                {% else %}
+
+                <span class="badge bg-success align-self-start">
+                    Read
+                </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-info">
+        No notifications available.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
