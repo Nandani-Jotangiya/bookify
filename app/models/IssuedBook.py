@@ -1,6 +1,15 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, String, DateTime, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    Float,
+    ForeignKey,
+    String,
+    DateTime,
+    Boolean,
+)
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
@@ -9,39 +18,95 @@ class IssuedBook(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+    )
 
-    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
+    book_id = Column(
+        Integer,
+        ForeignKey("books.id"),
+        nullable=False,
+    )
 
-    request_id = Column(Integer, ForeignKey("book_requests.id"), nullable=False)
+    request_id = Column(
+        Integer,
+        ForeignKey("book_requests.id"),
+        nullable=False,
+    )
 
-    issued_date = Column(DateTime, default=func.now())
+    issued_date = Column(
+        DateTime,
+        default=func.now(),
+    )
 
-    # NEW FIELDS
-    rent_amount = Column(Float, default=0)
+    rent_amount = Column(
+        Float,
+        default=0,
+    )
 
-    deposit_amount = Column(Float, default=0)
+    deposit_amount = Column(
+        Float,
+        default=0,
+    )
 
-    late_days = Column(Integer, default=0)
+    deposit_paid = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
 
-    fine_amount = Column(Float, default=0)
+    deposit_paid_date = Column(
+        DateTime,
+        nullable=True,
+    )
 
-    fine_paid = Column(Boolean, default=False)
+    late_days = Column(
+        Integer,
+        default=0,
+    )
 
-    deposit_paid = Column(Boolean, default=False, nullable=False)
+    fine_amount = Column(
+        Float,
+        default=0,
+    )
 
-    fine_paid_date = Column(DateTime, nullable=True)
+    fine_paid = Column(
+        Boolean,
+        default=False,
+    )
 
-    due_date = Column(DateTime, nullable=False)
+    fine_paid_date = Column(
+        DateTime,
+        nullable=True,
+    )
 
-    return_date = Column(DateTime, nullable=True)
+    due_date = Column(
+        DateTime,
+        nullable=False,
+    )
 
+    return_date = Column(
+        DateTime,
+        nullable=True,
+    )
+
+    STATUS_PENDING = "pending"
     STATUS_ISSUED = "issued"
     STATUS_RETURNED = "returned"
-    STATUS_PENDING = "pending"
 
-    status = Column(String, default=STATUS_ISSUED)
+    status = Column(
+        String,
+        default=STATUS_ISSUED,
+    )
 
-    user = relationship("User", back_populates="issued_books")
+    user = relationship(
+        "User",
+        back_populates="issued_books",
+    )
 
-    book = relationship("Book", back_populates="issued_books")
+    book = relationship(
+        "Book",
+        back_populates="issued_books",
+    )

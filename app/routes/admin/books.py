@@ -6,8 +6,11 @@ from app.core.csrf import verify_csrf_or_redirect
 from app.core.dependencies import get_admin_user
 from app.core.templates import render_template
 from app.database import get_db
+from app.core.context import unread_admin_notification_count
+
 from app.models.Book import Book
 from app.models.Category import Category
+
 
 router = APIRouter()
 
@@ -25,7 +28,22 @@ def list_books(request: Request, db: Session = Depends(get_db)):
 
     books = db.query(Book).all()
 
-    return render_template(request, "admin/books.html", books=books)
+    current_admin = get_admin_user(request)
+
+    if not current_admin:
+        return RedirectResponse("/login", status_code=303)
+
+    notification_count = unread_admin_notification_count(
+        db,
+        current_admin["user_id"],
+    )
+
+    return render_template(
+        request,
+        "admin/books.html",
+        books=books,
+        unread_admin_notification_count=notification_count,
+    )
 
 
 @router.get("/books/add")

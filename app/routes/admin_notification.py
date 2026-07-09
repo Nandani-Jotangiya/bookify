@@ -34,10 +34,10 @@ def admin_notifications(
 
     return render_template(
         request,
-        "admin/notifications.html",
+        "admin/notification.html",
         user=current_admin,
         notifications=notifications,
-        unread_notification_count=notification_count,
+        unread_admin_notification_count=notification_count,
     )
 
 

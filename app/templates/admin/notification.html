@@ -1,4 +1,4 @@
-{% extends "user/layout.html" %}
+{% extends "admin/layout.html" %}
 
 {% block title %}
 Notifications
@@ -8,9 +8,27 @@ Notifications
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Notifications</h2>
-    </div>
+   <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 class="fw-bold">Notifications</h2>
+
+    {% if notifications %}
+
+    <form
+        action="/admin/notifications/read-all"
+        method="post">
+
+        <button
+            type="submit"
+            class="btn btn-outline-primary">
+            Mark All as Read
+        </button>
+
+    </form>
+
+    {% endif %}
+
+</div>
 
     {% if notifications %}
 
@@ -41,9 +59,7 @@ Notifications
 
                 {% if not notification.is_read %}
 
-                <form
-                    action="/notifications/{{ notification.id }}/read"
-                    method="post">
+                <form action="/admin/notifications/{{ notification.id }}/read" method="post">
 
                     <button
                         class="btn btn-sm btn-primary">

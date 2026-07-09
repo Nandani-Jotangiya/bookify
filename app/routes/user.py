@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from app.core.csrf import verify_csrf_or_redirect
 from app.core.dependencies import get_logged_in_user
+from app.core.dependencies import get_admin_user
 from app.core.templates import render_template
 from app.models.IssuedBook import IssuedBook
 from app.models.Book import Book

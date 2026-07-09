@@ -24,3 +24,27 @@ def unread_admin_notification_count(db, admin_id):
         )
         .count()
     )
+
+
+def get_admin_context(
+    db: Session,
+    current_admin: dict,
+) -> dict:
+    return {
+        "unread_admin_notification_count": unread_admin_notification_count(
+            db,
+            current_admin["user_id"],
+        )
+    }
+
+
+def get_user_context(
+    db: Session,
+    current_user: dict,
+) -> dict:
+    return {
+        "unread_notification_count": unread_notification_count(
+            db,
+            current_user["user_id"],
+        )
+    }

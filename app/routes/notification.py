@@ -3,7 +3,8 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.core.context import unread_notification_count
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_admin_user
+
 from app.core.templates import render_template
 from app.database import get_db
 from app.models.Notification import Notification
@@ -69,3 +70,33 @@ def mark_notification_as_read(
     db.commit()
 
     return RedirectResponse("/notifications", status_code=303)
+
+
+@router.post("/admin/notifications/read-all")
+def mark_all_admin_notifications_as_read(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    current_admin = get_admin_user(request)
+
+    if not current_admin:
+        return RedirectResponse("/login", status_code=303)
+
+    (
+        db.query(Notification)
+        .filter(
+            Notification.user_id == current_admin["user_id"],
+            Notification.is_read.is_(False),
+        )
+        .update(
+            {"is_read": True},
+            synchronize_session=False,
+        )
+    )
+
+    db.commit()
+
+    return RedirectResponse(
+        "/admin/notifications",
+        status_code=303,
+    )

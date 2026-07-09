@@ -18,6 +18,15 @@
                 <a href="/admin/requests">Book Requests</a>
                 <a href="/admin/issued-books">Issue Books</a>
                 <a href="/admin/history">History</a>
+                <a href="/admin/notifications" class="nav-link">
+                    Notifications
+
+                   {% if unread_admin_notification_count|default(0) > 0 %}
+<span class="badge bg-danger">
+    {{ unread_admin_notification_count|default(0) }}
+</span>
+{% endif %}
+                </a>
             </div>
             <a href="/logout" class="nav-logout">Logout</a>
         </nav>

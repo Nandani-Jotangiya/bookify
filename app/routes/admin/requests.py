@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.csrf import verify_csrf_or_redirect
 from app.core.dependencies import get_admin_user
+from app.core.context import unread_admin_notification_count
 from app.core.templates import render_template
 from app.database import get_db
 from app.models.Book import Book
@@ -32,16 +33,26 @@ def _load_admin_requests(db: Session):
 
 @router.get("/admin/requests")
 def admin_requests(
-    request: Request, error: str | None = None, db: Session = Depends(get_db)
+    request: Request,
+    error: str | None = None,
+    db: Session = Depends(get_db),
 ):
-    if not get_admin_user(request):
+    current_admin = get_admin_user(request)
+
+    if not current_admin:
         return RedirectResponse(url="/login", status_code=303)
+
+    notification_count = unread_admin_notification_count(
+        db,
+        current_admin["user_id"],
+    )
 
     return render_template(
         request,
         "admin/requests.html",
         requests=_load_admin_requests(db),
         error=error,
+        unread_admin_notification_count=notification_count,
     )
 
 
@@ -62,11 +73,17 @@ def approve_request(
     book_request = db.query(BookRequest).filter(BookRequest.id == request_id).first()
 
     if not book_request:
+        notification_count = unread_admin_notification_count(
+            db,
+            get_admin_user(request)["user_id"],
+        )
+
         return render_template(
             request,
             "admin/requests.html",
             requests=_load_admin_requests(db),
             error="Request not found.",
+            unread_admin_notification_count=notification_count,
         )
 
     if book_request.status != "pending":
@@ -75,11 +92,17 @@ def approve_request(
     book = book_request.book
 
     if book.available_quantity <= 0:
+        notification_count = unread_admin_notification_count(
+            db,
+            get_admin_user(request)["user_id"],
+        )
+
         return render_template(
             request,
             "admin/requests.html",
             requests=_load_admin_requests(db),
             error="Book is not available.",
+            unread_admin_notification_count=notification_count,
         )
 
     book_request.status = "approved"
@@ -142,11 +165,17 @@ def reject_request(
     book_request = db.query(BookRequest).filter(BookRequest.id == request_id).first()
 
     if not book_request:
+        notification_count = unread_admin_notification_count(
+            db,
+            get_admin_user(request)["user_id"],
+        )
+
         return render_template(
             request,
             "admin/requests.html",
             requests=_load_admin_requests(db),
             error="Request not found.",
+            unread_admin_notification_count=notification_count,
         )
 
     book_request.status = "rejected"

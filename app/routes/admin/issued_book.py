@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+from app.core.context import get_admin_context
 from app.core.dependencies import get_admin_user
 from app.core.templates import render_template
 from app.database import get_db
@@ -17,10 +18,14 @@ router = APIRouter()
 
 @router.get("/admin/issued-books")
 def issued_books(
-    request: Request, error: str | None = None, db: Session = Depends(get_db)
+    request: Request,
+    error: str | None = None,
+    db: Session = Depends(get_db),
 ):
-    if not get_admin_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+    current_admin = get_admin_user(request)
+
+    if not current_admin:
+        return RedirectResponse("/login", status_code=303)
 
     issued_book_records = (
         db.query(IssuedBook, Book, User)
@@ -63,4 +68,5 @@ def issued_books(
         "admin/issued_books.html",
         issued_books=issued_books_data,
         error=error,
+        **get_admin_context(db, current_admin),
     )
