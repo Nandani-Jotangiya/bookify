@@ -4,5 +4,16 @@ from app.models.Category import Category
 from app.models.IssuedBook import IssuedBook
 from app.models.User import User
 from app.models.Notification import Notification
+from app.models.ChatRequest import ChatRequest
+from app.models.ChatMessage import ChatMessage
 
-__all__ = ["Book", "BookRequest", "Category", "IssuedBook", "User", "Notification"]
+__all__ = [
+    "Book",
+    "BookRequest",
+    "Category",
+    "IssuedBook",
+    "User",
+    "Notification",
+    "ChatRequest",
+    "ChatMessage",
+]

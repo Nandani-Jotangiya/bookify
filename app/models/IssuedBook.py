@@ -110,3 +110,5 @@ class IssuedBook(Base):
         "Book",
         back_populates="issued_books",
     )
+
+    

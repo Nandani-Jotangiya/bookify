@@ -1,0 +1,156 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}
+Chat Requests
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Chat Requests</h2>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            {% if chat_requests %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Requested At</th>
+                            <th>Status</th>
+                            <th width="220">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for chat in chat_requests %}
+
+                        <tr>
+
+                            <td>{{ chat.id }}</td>
+
+                            <td>{{ chat.user.name }}</td>
+
+                            <td>{{ chat.user.email }}</td>
+
+                            <td>
+                                {{ chat.requested_at.strftime("%d-%m-%Y %I:%M %p") }}
+                            </td>
+
+                            <td>
+
+                                {% if chat.status == "pending" %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
+
+                                {% elif chat.status == "approved" %}
+
+                                <span class="badge bg-success">
+                                    Approved
+                                </span>
+
+                                {% elif chat.status == "rejected" %}
+
+                                <span class="badge bg-danger">
+                                    Rejected
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if chat.status == "pending" %}
+
+                                <form
+                                    action="/admin/chat/{{ chat.id }}/approve"
+                                    method="post"
+                                    class="d-inline"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-success btn-sm"
+                                    >
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form
+                                    action="/admin/chat/{{ chat.id }}/reject"
+                                    method="post"
+                                    class="d-inline"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm"
+                                    >
+                                        Reject
+                                    </button>
+                                </form>
+
+                                {% elif chat.status == "approved" %}
+
+                                <a
+                                    href="/admin/chat/{{ chat.id }}"
+                                    class="btn btn-primary btn-sm"
+                                >
+                                    Open Chat
+                                </a>
+
+                                {% elif chat.status == "rejected" %}
+
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    disabled
+                                >
+                                    Rejected
+                                </button>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="text-center py-5">
+
+                <h5 class="text-muted">
+                    No chat requests found.
+                </h5>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

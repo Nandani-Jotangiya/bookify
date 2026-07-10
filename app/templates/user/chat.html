@@ -1,0 +1,31 @@
+<h2>Support Chat</h2>
+
+{% if not chat_request %}
+
+<form action="/user/chat/request" method="post">
+    <button type="submit">
+        Request Chat
+    </button>
+</form>
+
+{% elif chat_request.status == "pending" %}
+
+<p>Your chat request is waiting for admin approval.</p>
+
+{% elif chat_request.status == "approved" %}
+
+<a href="/user/chat/messages">
+    Open Chat
+</a>
+
+{% elif chat_request.status == "rejected" %}
+
+<p>Your request has been rejected.</p>
+
+<form action="/user/chat/request" method="post">
+    <button type="submit">
+        Request Again
+    </button>
+</form>
+
+{% endif %}

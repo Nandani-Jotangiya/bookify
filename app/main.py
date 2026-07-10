@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-from app.routes.notification import router as notification_router
+from app.routes.user.notification import router as notification_router
 
 from app.config import SECRET_KEY, STATIC_DIR
 from app.db_init import initialize_database
@@ -15,10 +15,11 @@ from app.routes.admin.dashboard import router as dashboard_router
 from app.routes.admin.history import router as history_router
 from app.routes.admin.issued_book import router as issued_book_router
 from app.routes.admin.requests import router as requests_router
-from app.routes.auth import router as auth_router
-from app.routes.payment import router as payment_router
-from app.routes.user import router as user_router
-from app.routes import admin_notification
+from app.routes.user.auth import router as auth_router
+from app.routes.user.payment import router as payment_router
+from app.routes.user.user import router as user_router
+from app.routes.admin import admin_notification
+from app.routes.user.chat import router as chat_router
 
 load_dotenv()
 
@@ -48,6 +49,7 @@ app.include_router(issued_book_router)
 app.include_router(history_router)
 app.include_router(notification_router)
 app.include_router(admin_notification.router)
+app.include_router(chat_router)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
