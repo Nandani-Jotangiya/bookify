@@ -20,6 +20,8 @@ from app.routes.user.payment import router as payment_router
 from app.routes.user.user import router as user_router
 from app.routes.admin import admin_notification
 from app.routes.user.chat import router as chat_router
+from app.routes.admin.chat import router as admin_chat_router
+from app.routes import websocket
 
 load_dotenv()
 
@@ -50,6 +52,8 @@ app.include_router(history_router)
 app.include_router(notification_router)
 app.include_router(admin_notification.router)
 app.include_router(chat_router)
+app.include_router(admin_chat_router)
+app.include_router(websocket.router)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

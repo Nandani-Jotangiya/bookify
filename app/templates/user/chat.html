@@ -1,31 +1,100 @@
-<h2>Support Chat</h2>
+{% extends "user/layout.html" %}
 
-{% if not chat_request %}
+{% block title %}
+Support Chat
+{% endblock %}
 
-<form action="/user/chat/request" method="post">
-    <button type="submit">
-        Request Chat
-    </button>
-</form>
+{% block content %}
 
-{% elif chat_request.status == "pending" %}
+<div class="container mt-4">
 
-<p>Your chat request is waiting for admin approval.</p>
+    <h2 class="mb-4">
+        Support Chat
+    </h2>
 
-{% elif chat_request.status == "approved" %}
+    {% if not chat_request %}
 
-<a href="/user/chat/messages">
-    Open Chat
-</a>
+        <div class="card p-4">
 
-{% elif chat_request.status == "rejected" %}
+            <h5>No chat request found.</h5>
 
-<p>Your request has been rejected.</p>
+            <p>
+                Click below to request a chat with the administrator.
+            </p>
 
-<form action="/user/chat/request" method="post">
-    <button type="submit">
-        Request Again
-    </button>
-</form>
+            <form
+                action="/user/chat/request"
+                method="post"
+            >
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Request Chat
+                </button>
+            </form>
 
-{% endif %}
+        </div>
+
+    {% elif chat_request.status == "pending" %}
+
+        <div class="alert alert-warning">
+
+            <h5>Waiting for Approval</h5>
+
+            <p class="mb-0">
+                Your chat request has been sent successfully.
+                Please wait until the administrator approves it.
+            </p>
+
+        </div>
+
+    {% elif chat_request.status == "rejected" %}
+
+        <div class="alert alert-danger">
+
+            <h5>Request Rejected</h5>
+
+            <p class="mb-3">
+                Your previous chat request was rejected.
+            </p>
+
+            <form
+                action="/user/chat/request"
+                method="post"
+            >
+                <button
+                    class="btn btn-primary"
+                    type="submit"
+                >
+                    Request Again
+                </button>
+            </form>
+
+        </div>
+
+    {% elif chat_request.status == "approved" %}
+
+        <div class="alert alert-success">
+
+            <h5>Chat Approved</h5>
+
+            <p>
+                Your chat request has been approved.
+                Click below to open the live chat.
+            </p>
+
+            <a
+                href="/user/chat/messages"
+                class="btn btn-success"
+            >
+                Open Chat
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -16,7 +16,7 @@ Chat Requests
 
         <div class="card-body">
 
-            {% if chat_requests %}
+            {% if requests %}
 
             <div class="table-responsive">
 
@@ -29,13 +29,13 @@ Chat Requests
                             <th>Email</th>
                             <th>Requested At</th>
                             <th>Status</th>
-                            <th width="220">Action</th>
+                            <th width="250">Action</th>
                         </tr>
                     </thead>
 
                     <tbody>
 
-                        {% for chat in chat_requests %}
+                        {% for chat in requests %}
 
                         <tr>
 
@@ -53,21 +53,21 @@ Chat Requests
 
                                 {% if chat.status == "pending" %}
 
-                                <span class="badge bg-warning text-dark">
-                                    Pending
-                                </span>
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
 
                                 {% elif chat.status == "approved" %}
 
-                                <span class="badge bg-success">
-                                    Approved
-                                </span>
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
 
                                 {% elif chat.status == "rejected" %}
 
-                                <span class="badge bg-danger">
-                                    Rejected
-                                </span>
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
 
                                 {% endif %}
 
@@ -77,49 +77,49 @@ Chat Requests
 
                                 {% if chat.status == "pending" %}
 
-                                <form
-                                    action="/admin/chat/{{ chat.id }}/approve"
-                                    method="post"
-                                    class="d-inline"
-                                >
-                                    <button
-                                        type="submit"
-                                        class="btn btn-success btn-sm"
+                                    <form
+                                        action="/admin/chat/{{ chat.id }}/approve"
+                                        method="post"
+                                        class="d-inline"
                                     >
-                                        Approve
-                                    </button>
-                                </form>
+                                        <button
+                                            type="submit"
+                                            class="btn btn-success btn-sm"
+                                        >
+                                            Approve
+                                        </button>
+                                    </form>
 
-                                <form
-                                    action="/admin/chat/{{ chat.id }}/reject"
-                                    method="post"
-                                    class="d-inline"
-                                >
-                                    <button
-                                        type="submit"
-                                        class="btn btn-danger btn-sm"
+                                    <form
+                                        action="/admin/chat/{{ chat.id }}/reject"
+                                        method="post"
+                                        class="d-inline"
                                     >
-                                        Reject
-                                    </button>
-                                </form>
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-sm"
+                                        >
+                                            Reject
+                                        </button>
+                                    </form>
 
                                 {% elif chat.status == "approved" %}
 
-                                <a
-                                    href="/admin/chat/{{ chat.id }}"
-                                    class="btn btn-primary btn-sm"
-                                >
-                                    Open Chat
-                                </a>
+                                    <a
+                                        href="/admin/chat/{{ chat.id }}"
+                                        class="btn btn-primary btn-sm"
+                                    >
+                                        Open Chat
+                                    </a>
 
                                 {% elif chat.status == "rejected" %}
 
-                                <button
-                                    class="btn btn-secondary btn-sm"
-                                    disabled
-                                >
-                                    Rejected
-                                </button>
+                                    <button
+                                        class="btn btn-secondary btn-sm"
+                                        disabled
+                                    >
+                                        Rejected
+                                    </button>
 
                                 {% endif %}
 

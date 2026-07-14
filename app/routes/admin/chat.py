@@ -4,13 +4,14 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-
-from app.core import templates
-from app.core.dependencies import get_current_user
 from app.database import get_db
+from app.core.dependencies import get_current_user
+from app.core.templates import render_template
+from app.core.context import get_admin_context
+from app.models.ChatMessage import ChatMessage
+
 from app.models.ChatRequest import ChatRequest
 from app.models.User import User
-
 
 router = APIRouter()
 
@@ -21,6 +22,7 @@ def admin_chat_requests(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
+    # Allow only admins
     if current_user["role"] != "admin":
         return RedirectResponse("/", status_code=303)
 
@@ -31,14 +33,78 @@ def admin_chat_requests(
         .all()
     )
 
-    return templates.TemplateResponse(
+    context = get_admin_context(
+        db=db,
+        current_admin=current_user,
+    )
+
+    context.update(
+        {
+            "requests": chat_requests,
+            "user": current_user,
+        }
+    )
+
+    return render_template(
         request=request,
         name="admin/chat_requests.html",
-        context={
-            "request": request,
-            "chat_requests": chat_requests,
+        **context,
+    )
+
+
+@router.get("/admin/chat/{chat_request_id}")
+def admin_chat(
+    chat_request_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    # Only admins can access
+    if current_user["role"] != "admin":
+        return RedirectResponse("/", status_code=303)
+
+    # Find the approved chat request
+    chat_request = (
+        db.query(ChatRequest)
+        .filter(
+            ChatRequest.id == chat_request_id,
+            ChatRequest.status == "approved",
+        )
+        .first()
+    )
+
+    if not chat_request:
+        return RedirectResponse(
+            "/admin/chat/requests",
+            status_code=303,
+        )
+
+    # Load all messages
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.chat_request_id == chat_request.id)
+        .order_by(ChatMessage.created_at.asc())
+        .all()
+    )
+
+    # Admin sidebar context
+    context = get_admin_context(
+        db=db,
+        current_admin=current_user,
+    )
+
+    context.update(
+        {
             "user": current_user,
-        },
+            "chat_request": chat_request,
+            "messages": messages,
+        }
+    )
+
+    return render_template(
+        request=request,
+        name="admin/chat_messages.html",
+        **context,
     )
 
 
@@ -48,7 +114,6 @@ def approve_chat_request(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    # Optional: Verify admin role
     if current_user["role"] != "admin":
         return RedirectResponse("/", status_code=303)
 
@@ -59,8 +124,20 @@ def approve_chat_request(
             "/admin/chat/requests",
             status_code=303,
         )
+    (
+        db.query(ChatMessage)
+        .filter(
+            ChatMessage.chat_request_id == chat_request.id,
+            ChatMessage.receiver_id == current_user["user_id"],
+            ChatMessage.is_read == False,
+        )
+        .update(
+            {
+                ChatMessage.is_read: True,
+            }
+        )
+    )
 
-    # Already approved
     if chat_request.status == "approved":
         return RedirectResponse(
             "/admin/chat/requests",
@@ -85,7 +162,6 @@ def reject_chat_request(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    # Optional: Verify admin role
     if current_user["role"] != "admin":
         return RedirectResponse("/", status_code=303)
 
@@ -97,7 +173,6 @@ def reject_chat_request(
             status_code=303,
         )
 
-    # Already rejected
     if chat_request.status == "rejected":
         return RedirectResponse(
             "/admin/chat/requests",

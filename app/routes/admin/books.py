@@ -7,7 +7,8 @@ from app.core.dependencies import get_admin_user
 from app.core.templates import render_template
 from app.database import get_db
 from app.core.context import unread_admin_notification_count
-
+from app.models.BookRequest import BookRequest
+from app.models.IssuedBook import IssuedBook
 from app.models.Book import Book
 from app.models.Category import Category
 
@@ -211,26 +212,73 @@ def delete_book(
         return csrf_redirect
 
     if not get_admin_user(request):
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse(
+            url="/login",
+            status_code=303,
+        )
 
     book = db.query(Book).filter(Book.id == id).first()
 
-    if book:
-        issued_books = book.quantity - book.available_quantity
+    if not book:
+        return RedirectResponse(
+            url="/books",
+            status_code=303,
+        )
 
-        if issued_books > 0:
-            books = db.query(Book).all()
-            return render_template(
-                request,
-                "admin/books.html",
-                books=books,
-                error="Cannot delete this book because copies are currently issued.",
-            )
+    books = db.query(Book).all()
 
-        db.delete(book)
-        db.commit()
+    current_admin = get_admin_user(request)
 
-    return RedirectResponse(url="/books", status_code=303)
+    notification_count = unread_admin_notification_count(
+        db,
+        current_admin["user_id"],
+    )
+
+    # Don't allow deletion if copies are currently issued
+    issued_copies = book.quantity - book.available_quantity
+
+    if issued_copies > 0:
+        return render_template(
+            request,
+            "admin/books.html",
+            books=books,
+            unread_admin_notification_count=notification_count,
+            error="Cannot delete this book because copies are currently issued.",
+        )
+
+    # Don't allow deletion if any book request exists
+    existing_request = (
+        db.query(BookRequest).filter(BookRequest.book_id == book.id).first()
+    )
+
+    if existing_request:
+        return render_template(
+            request,
+            "admin/books.html",
+            books=books,
+            unread_admin_notification_count=notification_count,
+            error="Cannot delete this book because request history exists.",
+        )
+
+    # Don't allow deletion if issue history exists
+    existing_issue = db.query(IssuedBook).filter(IssuedBook.book_id == book.id).first()
+
+    if existing_issue:
+        return render_template(
+            request,
+            "admin/books.html",
+            books=books,
+            unread_admin_notification_count=notification_count,
+            error="Cannot delete this book because issue history exists.",
+        )
+
+    db.delete(book)
+    db.commit()
+
+    return RedirectResponse(
+        url="/books",
+        status_code=303,
+    )
 
 
 @router.post("/books/add")
